@@ -12,6 +12,7 @@ angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.directives'])
     $routeProvider.when('/friends', {template: 'partials/friends.html', controller: FriendsController});
     $routeProvider.when('/friends/:id', {template: 'partials/friend-edit.html', controller: FriendEditController});
     $routeProvider.when('/addFriend/:userAddress/:secret', {template: 'partials/friends.html', controller: FriendsController});
+    $routeProvider.when('/invitation/:userAddress/:secret', {template: 'partials/friend.html', controller: FriendViewController});
 
     $routeProvider.when('/friends-stuff', {template: 'partials/friends-stuff.html', controller: FriendsStuffController});
 

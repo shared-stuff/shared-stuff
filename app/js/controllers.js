@@ -4,7 +4,8 @@
 var log = utils.log;
 
 function AboutController($scope) {
-    utils.log($scope.session);
+    log("About");
+    log($scope.session);
     $scope.bla= "blase";
     log(utils.randomString(10));
 }

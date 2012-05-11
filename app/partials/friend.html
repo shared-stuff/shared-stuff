@@ -1,0 +1,14 @@
+<h2>Invitation from {{friend.name || "No Name"}}</h2></div>
+
+<p>
+    {{friend.userAddress}} wants to share some stuff with you!
+</p>
+
+<button class="btn btn-primary" ng-click="addFriend()" >Add to my friends</button>
+
+<ul class="unstyled stuffList friendStuffList">
+    <li ng-repeat="stuff in stuffList | orderBy:'title'">
+        <h3>{{stuff.title}}</h3>
+        <p class="description">{{stuff.description}}</p>
+    </li>
+</ul>

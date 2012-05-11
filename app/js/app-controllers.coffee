@@ -1,10 +1,17 @@
 log = utils.log
 focus = utils.focus
 
+needsUserLoggedIn = (path)->
+  !_.any(['invitation','login'],(publicPath) -> path.indexOf(publicPath)==1)
+
 
 AppController = ($scope,$location,settingsDAO)->
   $scope.logout = ->
     remoteStorageUtils.deleteToken();
+    $scope.session = {
+      userAddress: null
+      isLoggedIn: false
+    }
     $location.path('/login')
 
   $scope.setLoggenOn = ->
@@ -14,6 +21,13 @@ AppController = ($scope,$location,settingsDAO)->
     }
     $scope.$digest();
 
+  onRouteChange = ->
+    path= $location.path()
+    log(path)
+    if !$scope.session.isLoggedIn and needsUserLoggedIn($location.path())
+      sessionStorage.setItem('targetPath',path)
+      $location.path('/login');
+
   remoteStorageUtils.isLoggedOn (isLoggedOn) ->
     if (isLoggedOn)
       $scope.setLoggenOn()
@@ -22,17 +36,10 @@ AppController = ($scope,$location,settingsDAO)->
         userAddress: null
         isLoggedIn: false
       }
-      href = window.location.href
-      loginHash = '#login'
-      if href.indexOf(loginHash)>0
-        sessionStorage.setItem('targetHref',window.location.href)
-      else
-        sessionStorage.setItem('targetHref','#')
-      window.location.replace(loginHash);
+      onRouteChange()
+    $scope.$on('$beforeRouteChange', onRouteChange)
 
 
-  #settingsDAO.readSettings (settings)->
-  #  $scope.session.settings = settings
 
 AppController.$inject = ['$scope','$location','settingsDAO']
 

@@ -59,7 +59,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
 buildInviteFriendUrl = (userAddress,secret) ->
   l = window.location
   part1 = l.protocol+'//'+l.host+ l.pathname
-  hash = '/addFriend/'+userAddress+'/'+secret
+  hash = '/invitation/'+userAddress+'/'+secret
   return part1+'#'+hash
 
 
@@ -107,6 +107,23 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)
 FriendEditController.$inject = ['$scope','friendDAO','friendsStuffDAO','$routeParams','$location']
 
 
+FriendViewController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)->
+  $scope.stuffList = []
+  friend = new Friend({userAddress:$routeParams.userAddress,secret:$routeParams.secret})
+  $scope.friend = friend
+
+  friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
+    $scope.stuffList = friendStuff
+    $scope.$digest()
+  )
+
+  $scope.addFriend = ->
+    $location.path('/addFriend/'+friend.userAddress+'/'+friend.secret)
+
+
+FriendViewController.$inject = ['$scope','friendDAO','friendsStuffDAO','$routeParams','$location']
+
 #export
 this.FriendsController = FriendsController
 this.FriendEditController = FriendEditController
+this.FriendViewController = FriendViewController

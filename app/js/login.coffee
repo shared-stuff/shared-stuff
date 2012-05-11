@@ -1,7 +1,7 @@
 log = utils.log
 rs = remoteStorageUtils
 
-LoginController = ($scope,settingsDAO)->
+LoginController = ($scope,$location,settingsDAO)->
   log("Login")
   $scope.session.isLoggedIn = false
   $scope.userAddress = "shybyte@owncube.com"
@@ -14,10 +14,11 @@ LoginController = ($scope,settingsDAO)->
         rs.connect(userAddress, (error, storageInfo)->
           rs.authorize(['public', 'sharedstuff'], (token) ->
             localStorage.setItem('userAddress',userAddress);
-            targetUrl = sessionStorage.getItem('targetHref') || 'index.html';
-            sessionStorage.removeItem('targetHref');
-            window.location.replace(targetUrl)
             $scope.setLoggenOn()
+            targetPath = sessionStorage.getItem('targetPath') || '/';
+            sessionStorage.removeItem('targetPath');
+            $scope.$apply ->
+              $location.path(targetPath)
           )
         )
       else
@@ -26,7 +27,7 @@ LoginController = ($scope,settingsDAO)->
       log(e)
 
 
-LoginController.$inject = ['$scope','settingsDAO']
+LoginController.$inject = ['$scope','$location','settingsDAO']
 
 #export
 this.LoginController = LoginController
