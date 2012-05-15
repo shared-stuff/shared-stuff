@@ -11,15 +11,13 @@ LoginController = ($scope,$location,settingsDAO)->
       userAddress = $scope.userAddress
       log("userAddress:"+userAddress)
       if userAddress
-        rs.connect(userAddress, (error, storageInfo)->
-          rs.authorize(['public', 'sharedstuff'], (token) ->
+        rs.connectAndAuthorize(userAddress, ['public', 'sharedstuff'], ->
             localStorage.setItem('userAddress',userAddress);
             $scope.setLoggenOn()
             targetPath = sessionStorage.getItem('targetPath') || '/';
             sessionStorage.removeItem('targetPath');
             $scope.$apply ->
               $location.path(targetPath)
-          )
         )
       else
         alert("Please enter a remote storage id!")

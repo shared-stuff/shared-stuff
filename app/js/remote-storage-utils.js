@@ -3,8 +3,32 @@
 
 var remoteStorageUtils = (function () {
     var onAuthorized;
+    var popup;
     var RS_TOKEN = 'remoteStorageToken';
     var RS_INFO = 'userStorageInfo';
+
+    function getPopUpUrl() {
+        var hrefWithoutHash = location.href.substring(0,location.href.length-location.hash.length);
+        var path = hrefWithoutHash.replace(/\/[^\/]*$/,"");
+        return path+'/remote-storage-login-popup.html';
+    }
+
+    function connectAndAuthorize(userAddress,categories, onAuthorizedArg) {
+        onAuthorized = onAuthorizedArg;
+        var redirectUrl = getPopUpUrl();
+        popup= window.open(redirectUrl);
+        connect(userAddress, function (error,storageInfo) {
+            if (storageInfo) {
+                var oauthPage = remoteStorage.createOAuthAddress(storageInfo, categories, redirectUrl);
+                popup.location.replace(oauthPage);
+            } else {
+                popup.close();
+            }
+        });
+    }
+
+
+
 
     // `getStorageInfo` takes a user address ("user@host") and a callback as its
     // arguments. The callback will get an error code, and a `storageInfo`
@@ -34,9 +58,7 @@ var remoteStorageUtils = (function () {
     function authorize(categories, onAuthorizedArg) {
         onAuthorized = onAuthorizedArg;
         var storageInfo = JSON.parse(localStorage.getItem(RS_INFO));
-        var hrefWithoutHash = location.href.substring(0,location.href.length-location.hash.length);
-        var path = hrefWithoutHash.replace(/\/[^\/]*$/,"")
-        var redirectUri = path+'/remote-storage-login-popup.html';
+        var redirectUri = getPopUpUrl()
         console.log("RedirectUrl: " + redirectUri);
 
         // `createOAuthAddress` takes the `storageInfo`, the categories that we
@@ -135,6 +157,7 @@ var remoteStorageUtils = (function () {
     return {
         connect:connect,
         authorize:authorize,
+        connectAndAuthorize: connectAndAuthorize,
         getItem:getItem,
         setItem:setItem,
         isLoggedOn: isLoggedOn,

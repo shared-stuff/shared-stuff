@@ -1,24 +1,25 @@
 <!DOCTYPE html>
 <html lang='en'>
-  <head>
+<head>
     <meta charset='utf-8'>
     <title>Shared Stuff Remote Storage Login</title>
     <script src="lib/remoteStorage.js" type="text/javascript"></script>
-    <script type="text/javascript">
-        (function() {
-            // `receiveToken` parses the OAuth token from the URL params
-            var token = remoteStorage.receiveToken();
+</head>
 
+<body>
+<p id="message">Redirecting to Login Dialog ...</p>
+</body>
+<script type="text/javascript">
+    (function () {
+        // `receiveToken` parses the OAuth token from the URL params
+        var token = remoteStorage.receiveToken();
+        if (token) {
             // We send the token [back to our main page](tutorial.html)
-            window.opener.postMessage(token, location.protocol+'//'+location.host);
+            window.opener.postMessage(token, location.protocol + '//' + location.host);
             // and close the window.
+            document.getElementById('message').innerText = "Closing Dialog ...";
             window.close();
-        })();
-
-    </script>
-  </head>
-
-  <body>
-    <p>Closing dialog...</p>
-  </body>
+        }
+    })();
+</script>
 </html>

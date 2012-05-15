@@ -31,6 +31,10 @@ h2 {
 
 /* Forms */
 
+label::after {
+    content: ": ";
+}
+
 .error {
     color: red;
     margin-bottom: 1em;
@@ -75,8 +79,30 @@ h2 {
     margin-top: 1em;
 }
 
+
+/* Login Form */
+
+#loginForm {
+    margin: 0 auto;
+    width: 310px;
+    background: #f8f8f8;
+    border-radius: 5px;
+    border: 1px solid silver;
+    padding: 1em;
+    margin-bottom: 1em;
+}
+
+#loginForm input {
+    display: block;
+}
+
+#loginForm p {
+    margin: 1em 0;
+}
+
 /* Export Import*/
 
 .inexport textarea {
     height: 20em;
 }
+
