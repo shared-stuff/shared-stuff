@@ -13,7 +13,6 @@
     </div>
 
     <label for="secret">Secret</label>
-    <input id="secret" name="secret" ng-model="friend.secret" ng-model-instant required/>
-    <div class="error" ng-show="itemForm.secret.$error.required && showValidationErrors">Secret is required!
-    </div>
+    <input id="secret" name="secret" ng-model="friend.secret" ng-model-instant/>
+    <!--<div class="error" ng-show="showValidationErrors">Secret seems invalid!</div>-->
 </form>

@@ -2,6 +2,7 @@ class Stuff
   constructor: (props)->
     @title = props?.title || ''
     @description = props?.description || ''
+    @visibility = props?.visibility || "friends"
     time = new Date().getTime()
     @id = props?.id || ''+time
     @created = props?.created || time

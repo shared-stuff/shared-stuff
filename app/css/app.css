@@ -12,9 +12,25 @@ h2 {
     text-align: right;
 }
 
+/*Stuff List*/
+
 .stuffList > li {
     margin-bottom: 1.5em;
 }
+
+.visibility {
+    color: #888;
+}
+
+.owner {
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.friendStuffList {
+    margin-top: 1em;
+}
+
 
 
 
@@ -68,15 +84,6 @@ label::after {
 
 .description {
     margin: 0 0 0.3em 0;
-}
-
-.owner {
-    font-style: italic;
-    opacity: 0.8;
-}
-
-.friendStuffList {
-    margin-top: 1em;
 }
 
 

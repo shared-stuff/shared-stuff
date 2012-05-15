@@ -1,5 +1,6 @@
 'use strict'
 log = utils.log
+isBlank = utils.isBlank
 focus = utils.focus
 doNothing = utils.doNothing
 randomString = utils.randomString
@@ -8,6 +9,7 @@ defer = utils.defer
 RS_CATEGORY = "sharedstuff"
 MY_STUFF_KEY = "myStuffList"
 PUBLIC_PREFIX = "sharedstuff-"
+PUBLIC_KEY = "public"
 
 rs = remoteStorageUtils
 
@@ -65,6 +67,8 @@ class MyStuffDAO extends RemoteStorageDAO
     super(allItems, callback)
     @settingsDAO.getSecret (secret)->
       rs.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify(allItems), doNothing)
+    publicStuff = _.filter(allItems, (item)-> item.visibility=='public')
+    rs.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify(publicStuff), doNothing)
 
 
 class LocalStorageDAO
@@ -134,7 +138,7 @@ class FriendsStuffDAO
       remoteStorage.getStorageInfo(friend.userAddress, (error, storageInfo) ->
           client = remoteStorage.createClient(storageInfo, 'public')
           if storageInfo
-            client.get(PUBLIC_PREFIX + friend.secret, (err, data) ->
+            client.get(getFriendStuffKey(friend), (err, data) ->
                 if data
                   callback(JSON.parse(data || '[]'))
                 else
@@ -151,7 +155,7 @@ class FriendsStuffDAO
       remoteStorage.getStorageInfo(friend.userAddress, (error, storageInfo) ->
           if storageInfo
             client = remoteStorage.createClient(storageInfo, 'public')
-            client.get(PUBLIC_PREFIX + friend.secret, (err, data) ->
+            client.get(getFriendStuffKey(friend), (err, data) ->
                 if data
                   callback([])
                 else
@@ -183,6 +187,9 @@ class FriendsStuffDAO
         @friendsStuffList[_.indexOf(@friendsStuffList, existingItem)] = stuff
       else
         @friendsStuffList.push(stuff)
+
+getFriendStuffKey = (friend) -> PUBLIC_PREFIX + (if !isBlank(friend.secret) then friend.secret else "public")
+
 
 
 friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList')
