@@ -2,7 +2,7 @@
     <div class="span4"><h2>My Friends</h2></div>
     <div class="span6 rightHeaderButtons">
         <button id="showAddFriendFormButton" class="btn" ng-click="showAddForm()" ng-hide="!isAddFriendFormHidden">Add Friend</button>
-        <button id="inviteFriend" class="btn" ng-click="inviteFriend()" ng-hide="!isInviteFriendFormHidden">Invite Friend</button>
+        <button id="inviteFriend" class="btn" ng-click="inviteFriend()" ng-hide="!isInviteFriendFormHidden">Invite</button>
     </div>
 </div>
 
@@ -14,8 +14,11 @@
 
 <div class="addItemForm itemForm" ng-hide="isInviteFriendFormHidden">
     <h3>Invite Friend</h3>
-    <label for="inviteUrl">To invite a friend and share your stuff with your friend you must send him this link:</label>
-    <input id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus" required/>
+    <label for="inviteUrl">To invite a friend and share your stuff with your friend, send this link:</label>
+    <input id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus"/>
+    <h3>Invite Public</h3>
+    <label for="publicInviteUrl">To invite the public and share your stuff with the public, send this link:</label>
+    <input id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl" ng-model-instant/>
     <button class="btn btn-primary" ng-click="closeInviteFriend()" id="closeInviteFriend">OK</button>
 </div>
 
