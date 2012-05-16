@@ -67,6 +67,13 @@ isBlank = (str) -> !str || /^\s*$/.test(str)
 #    }
 #  }
 
+
+applyIfNeeded = ($scope,f)->
+  if $scope.$root.$$phase
+    f()
+  else
+    $scope.$apply(f)
+
 this.utils =
   log: log
   focus: focus
@@ -76,3 +83,4 @@ this.utils =
   defer: defer
   isBlank: isBlank
   focusAndSelect: focusAndSelect
+  applyIfNeeded: applyIfNeeded

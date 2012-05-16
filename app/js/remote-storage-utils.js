@@ -139,7 +139,9 @@ var remoteStorageUtils = (function () {
 
     function isLoggedOn(callback) {
         if (!localStorage.getItem(RS_INFO) || !localStorage.getItem(RS_TOKEN)) {
-            callback(false);
+            setTimeout(function () {
+                callback(false);
+            },10);
         }
         try {
             setItem('sharedstuff', 'loggedOnTest', 'test',

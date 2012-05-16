@@ -1,11 +1,17 @@
 log = utils.log
 focus = utils.focus
+applyIfNeeded = utils.applyIfNeeded
 
 needsUserLoggedIn = (path)->
   !_.any(['invitation','login'],(publicPath) -> path.indexOf(publicPath)==1)
 
 
 AppController = ($scope,$location,settingsDAO)->
+  $scope.session = {
+    userAddress: localStorage.getItem('userAddress')
+    isLoggedIn: false
+  }
+
   $scope.logout = ->
     remoteStorageUtils.deleteToken();
     $scope.session = {
@@ -26,8 +32,9 @@ AppController = ($scope,$location,settingsDAO)->
     log(path)
     if !$scope.session.isLoggedIn and needsUserLoggedIn($location.path())
       sessionStorage.setItem('targetPath',path)
-      $scope.$apply ->
-        $location.path('/login');
+      applyIfNeeded($scope, ->
+        $location.path('/login')
+      )
 
   remoteStorageUtils.isLoggedOn (isLoggedOn) ->
     if (isLoggedOn)
