@@ -3,8 +3,8 @@ rs = remoteStorageUtils
 
 LoginController = ($scope,$location,settingsDAO)->
   log("Login")
-  $scope.session.isLoggedIn = false
-  $scope.userAddress = "shybyte@owncube.com"
+  #$scope.session.isLoggedIn = false
+  #$scope.userAddress = ""
 
   $scope.login = ->
     try
@@ -17,7 +17,7 @@ LoginController = ($scope,$location,settingsDAO)->
             targetPath = sessionStorage.getItem('targetPath') || '/';
             sessionStorage.removeItem('targetPath');
             $scope.$apply ->
-              $location.path(targetPath)
+              $location.path(targetPath).replace()
         )
       else
         alert("Please enter a remote storage id!")

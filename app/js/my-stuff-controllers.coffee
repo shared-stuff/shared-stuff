@@ -6,7 +6,7 @@ isValid = (stuff)-> !utils.isBlank(stuff.title)
 
 circles = {
   friends: 'Friends',
-  public: 'Public'
+  'public': 'Public'
 }
 
 MyStuffController = ($scope, stuffDAO)->

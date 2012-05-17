@@ -33,7 +33,7 @@ AppController = ($scope,$location,settingsDAO)->
     if !$scope.session.isLoggedIn and needsUserLoggedIn($location.path())
       sessionStorage.setItem('targetPath',path)
       applyIfNeeded($scope, ->
-        $location.path('/login')
+        $location.path('/login').replace()
       )
 
   remoteStorageUtils.isLoggedOn (isLoggedOn) ->
