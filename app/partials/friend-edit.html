@@ -21,7 +21,7 @@
 <ul class="unstyled stuffList friendStuffList">
     <li ng-repeat="stuff in stuffList | orderBy:'title'">
         <h3>{{stuff.title}}</h3>
-        <p class="description">{{stuff.description}}</p>
+        <p class="description" ng-bind-html="stuff.description | linky"></p>
         <div class="owner">{{ stuff.modified | date}}</div>
     </li>
 </ul>

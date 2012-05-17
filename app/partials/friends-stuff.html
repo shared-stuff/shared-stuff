@@ -26,7 +26,7 @@
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in stuffList | orderBy:sortAttribute">
         <h3>{{stuff.title}}</h3>
-        <p class="description">{{stuff.description}}</p>
+        <p class="description" ng-bind-html="stuff.description | linky"></p>
         <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})</div>
     </li>
 </ul>

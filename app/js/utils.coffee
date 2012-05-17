@@ -10,7 +10,7 @@ focus = (id)->
 
 focusAndSelect = (id)->
   setTimeout(->
-    $('#' + id).focus().select
+    $('#' + id).focus().select()
   , 100)
 
 defer = (callback)->
