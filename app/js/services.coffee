@@ -174,11 +174,15 @@ class FriendsStuffDAO
   list: (callback) ->
     self = @
     @friendDAO.list (friends)->
+      loadedCounter = 0
+      if friends.length==0
+        callback(self.friendsStuffList,'NO_FRIENDS')
       for friend in friends
         bindUpdateToFriend = (friend)->
           return (friendStuff) ->
             self._updateWithLoadedItems(friend, friendStuff)
-            callback(self.friendsStuffList)
+            loadedCounter++
+            callback(self.friendsStuffList,if loadedCounter==friends.length then 'DONE' else 'LOADING')
         self.listStuffByFriend(friend, bindUpdateToFriend(friend))
 
   _updateWithLoadedItems: (friend, friendStuff)->

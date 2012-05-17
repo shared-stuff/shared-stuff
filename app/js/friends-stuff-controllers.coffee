@@ -7,8 +7,9 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
   $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
 
   $defer ->
-      friendsStuffDAO.list (stuffList)->
+      friendsStuffDAO.list (stuffList,status)->
         $scope.stuffList = stuffList
+        $scope.status = status
         $scope.$digest();
 
   $scope.sortBy = (sortAttribute) ->
