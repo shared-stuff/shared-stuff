@@ -5,6 +5,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
   $scope.stuffList = []
   $scope.sortAttribute = '-modified'
   $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
+  $scope.status = "LOADING"
 
   $defer ->
       friendsStuffDAO.list (stuffList,status)->
