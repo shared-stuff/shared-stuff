@@ -9,6 +9,8 @@ angular.module('myApp', ['myApp.filters', 'myApp.services', 'myApp.directives'])
     $routeProvider.when('/mystuff', {template: 'partials/my-stuff.html', controller: MyStuffController});
     $routeProvider.when('/mystuff/:id', {template: 'partials/my-stuff-edit.html', controller: MyStuffEditController});
 
+    $routeProvider.when('/share-stuff', {template: 'partials/share-stuff.html', controller: ShareStuffController});
+
     $routeProvider.when('/friends', {template: 'partials/friends.html', controller: FriendsController});
     $routeProvider.when('/friends/:id', {template: 'partials/friend-edit.html', controller: FriendEditController});
     $routeProvider.when('/addFriend/:userAddress/:secret', {template: 'partials/friends.html', controller: FriendsController});

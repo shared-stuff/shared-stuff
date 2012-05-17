@@ -12,9 +12,10 @@
 
 <img src="img/loading.gif" alt="Loading..." ng-show="status=='LOADING'">
 
-
 <div class="alert alert-info" ng-hide="status != 'NO_FRIENDS'">
     It seems that you have no friends. You can change this by <a href="#/friends">adding some friends</a>.
+    If you have no Shared Stuff friends yet, you can <a href="#addFriend/shybyte@owncube.com">add shybyte</a> as a friend.
+    He's the programmer of Shared Stuff.
 </div>
 
 <div class="alert alert-info" ng-hide="status != 'DONE' || stuffList.length>0">

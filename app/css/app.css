@@ -96,7 +96,7 @@ label {
 }
 
 .itemForm textarea,
-.itemForm input {
+input {
     width: 98%;
 }
 
@@ -165,3 +165,8 @@ h2 {
     height: 20em;
 }
 
+/* Alerts*/
+
+.alert a {
+    font-weight: bold;
+}

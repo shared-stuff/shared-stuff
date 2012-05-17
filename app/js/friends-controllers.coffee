@@ -126,7 +126,20 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)
 
 FriendViewController.$inject = ['$scope','friendDAO','friendsStuffDAO','$routeParams','$location']
 
+ShareStuffController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)->
+    settingsDAO.getSecret (secret) ->
+      userAdress = $scope.session.userAddress
+      $scope.inviteUrl =  buildInviteFriendUrl(userAdress,secret)
+      $scope.publicInviteUrl =  buildPublicInviteUrl(userAdress)
+      $scope.$digest();
+      focusAndSelect('inviteUrl')
+
+FriendsController.$inject = ['$scope','friendDAO','friendsStuffDAO','settingsDAO','$routeParams']
+
+
+
 #export
 this.FriendsController = FriendsController
 this.FriendEditController = FriendEditController
 this.FriendViewController = FriendViewController
+this.ShareStuffController = ShareStuffController
