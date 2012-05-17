@@ -23,8 +23,13 @@
     <a href="#/friends">adding more friends</a> or encourage your friends to add some shared stuff.
 </div>
 
+<div class="" ng-show="status == 'DONE' || stuffList.length>0">
+    <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant />
+</div>
+
+
 <ul class="unstyled stuffList">
-    <li ng-repeat="stuff in stuffList | orderBy:sortAttribute">
+    <li ng-repeat="stuff in stuffList | filter:searchQuery | orderBy:sortAttribute">
         <h3>{{stuff.title}}</h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
         <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})</div>

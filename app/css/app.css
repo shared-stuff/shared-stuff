@@ -7,7 +7,16 @@ header h1 {
 
 body {
     background: #fa0;
-    font-size: 13px;
+}
+
+p,
+body,
+input,
+.btn{
+    font-size: 14px;
+}
+
+input[type="search"] {
 }
 
 h2 {
