@@ -1,14 +1,25 @@
-<h2>Invitation from {{friend.name || "No Name"}}</h2></div>
+<div class="box">
 
-<p>
-    {{friend.userAddress}} wants to share some stuff with you!
-</p>
+    <h2>Invitation from {{friend.name || "No Name"}}</h2>
 
-<button class="btn btn-primary" ng-click="addFriend()" >Add to my friends</button>
+    <p>
+        {{friend.name}} wants to share some stuff with you!
+    </p>
 
-<ul class="unstyled stuffList friendStuffList">
-    <li ng-repeat="stuff in stuffList | orderBy:'title'">
-        <h3>{{stuff.title}}</h3>
-        <p class="description">{{stuff.description}}</p>
-    </li>
-</ul>
+    <button class="btn btn-primary" ng-click="addFriend()" ng-hide="!session.isLoggedIn">Add to my friends</button>
+
+    <div ng-hide="session.isLoggedIn">
+        <p>In order to add {{friend.name}} to your friends and share your stuff with your friends you need to login to
+            "Shared Stuff".</p>
+        <button class="btn btn-primary" ng-click="addFriend()">Login and Add Friend</button>
+    </div>
+
+    <ul class="unstyled stuffList friendStuffList">
+        <li ng-repeat="stuff in stuffList | orderBy:'title'">
+            <h3>{{stuff.title}}</h3>
+
+            <p class="description">{{stuff.description}}</p>
+        </li>
+    </ul>
+
+</div>

@@ -5,12 +5,41 @@ header h1 {
     margin-bottom: 0.5em;
 }
 
+body {
+    background: #fa0;
+    font-size: 13px;
+}
+
 h2 {
     margin-bottom: 0.5em;
 }
 .rightHeaderButtons {
-    text-align: right;
+    float: right;
 }
+
+/* Top Nav Bar*/
+
+.navbar-inner {
+    border-radius: 0px;
+}
+
+.navbar .brand {
+    color: #fa0;
+    font-family: 'Henny Penny', cursive;
+    font-size: 30px;
+    position: relative;
+    top: 8px;
+    text-shadow: 1px 2px 3px #e80;
+    filter: dropshadow(color=#fa0, offx=1, offy=2);
+
+}
+
+.navbar ul,
+.navbar p {
+    position: relative;
+    top: 12px;
+}
+
 
 /*Stuff List*/
 
@@ -28,7 +57,7 @@ h2 {
 }
 
 .friendStuffList {
-    margin-top: 1em;
+    margin-top: 1.5em;
 }
 
 
@@ -49,6 +78,10 @@ h2 {
 
 label::after {
     content: ": ";
+}
+
+label {
+    font-weight: bold;
 }
 
 .error {
@@ -89,14 +122,12 @@ label::after {
 
 /* Login Form */
 
+h2 {
+    font-family: sans-serif;
+    color: #333;
+}
+
 #loginForm {
-    margin: 0 auto;
-    width: 310px;
-    background: #f8f8f8;
-    border-radius: 5px;
-    border: 1px solid silver;
-    padding: 1em;
-    margin-bottom: 1em;
 }
 
 #loginForm input {
@@ -105,6 +136,29 @@ label::after {
 
 #loginForm p {
     margin: 1em 0;
+}
+
+/* Box*/
+
+.box {
+    box-shadow:  2px 2px 5px 2px rgba(0, 0, 0, 0.5);
+    background: white;
+    border-radius: 10px;
+    border: 1px solid white;
+    padding: 1em;
+}
+
+.box .box {
+    box-shadow:  none;
+    border: none;
+    padding: 0;
+}
+
+
+.boxMinHeight {
+    min-height: 500px;
+    padding-left: 2em;
+    padding-right: 2em;
 }
 
 /* Export Import*/

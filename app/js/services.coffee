@@ -24,6 +24,8 @@ class RemoteStorageDAO
     else
       rs.getItem(@category, @key, (error, data)->
           self.dataCache = JSON.parse(data || '{"items":[]}')
+          if !self.dataCache.items
+            self.dataCache.items = []
           callback(self.dataCache.items)
       )
 
