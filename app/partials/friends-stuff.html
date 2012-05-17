@@ -10,6 +10,10 @@
 </div>
 <h2>Friends' Stuff</h2>
 
+<div class="alert alert-info" ng-hide="stuffList.length>0">
+    It seems that you have no friends or your friends have no stuff. You can change this by <a href="#/friends">adding more friends</a>.
+</div>
+
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in stuffList | orderBy:sortAttribute">
         <h3>{{stuff.title}}</h3>

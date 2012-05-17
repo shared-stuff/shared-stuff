@@ -21,6 +21,10 @@
     <button class="btn btn-primary" ng-click="closeInviteFriend()" id="closeInviteFriend">OK</button>
 </div>
 
+<div class="alert alert-info" ng-hide="friendList.length>0">
+    You have no friends? I can't believe that. Please add some!
+</div>
+
 <ul class="unstyled friendList">
     <li ng-repeat="friend in friendList | orderBy:'title'">
         <h3><a href="#/friends/{{friend.id}}">{{friend.name || "No Name"}}</a></h3>
