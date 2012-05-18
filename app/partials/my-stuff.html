@@ -15,6 +15,6 @@
     <li ng-repeat="stuff in stuffList | orderBy:'title'">
         <h3><a href="#/mystuff/{{stuff.id}}">{{stuff.title || "Untitled"}}</a></h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
-        <span ng-hide="!stuff.visibility" class="owner visibility">Public</span>
+        <span ng-show="stuff.visibility == 'public'" class="owner visibility">Public</span>
     </li>
 </ul>
