@@ -17,6 +17,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
     if ($routeParams.userAddress)
       $scope.friend = new Friend({userAddress:$routeParams.userAddress,secret:$routeParams.secret})
       $scope.isAddFriendFormHidden = false
+    $scope.status = 'LOADED'
     $scope.$digest();
 
   $scope.showAddForm = ()->

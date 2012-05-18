@@ -171,6 +171,9 @@ class FriendsStuffDAO
     else
       callback(['userAddress'])
 
+  clearCache: ->
+    @friendsStuffList = []
+
   list: (callback) ->
     self = @
     @friendDAO.list (friends)->
@@ -182,7 +185,7 @@ class FriendsStuffDAO
           return (friendStuff) ->
             self._updateWithLoadedItems(friend, friendStuff)
             loadedCounter++
-            callback(self.friendsStuffList,if loadedCounter==friends.length then 'DONE' else 'LOADING')
+            callback(self.friendsStuffList,if loadedCounter==friends.length then 'LOADED' else 'LOADING')
         self.listStuffByFriend(friend, bindUpdateToFriend(friend))
 
   _updateWithLoadedItems: (friend, friendStuff)->

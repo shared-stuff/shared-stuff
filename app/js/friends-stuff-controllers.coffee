@@ -8,6 +8,8 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
   $scope.status = "LOADING"
 
   $defer ->
+      log("list friend's stuff")
+      friendsStuffDAO.clearCache();
       friendsStuffDAO.list (stuffList,status)->
         $scope.stuffList = stuffList
         $scope.status = status

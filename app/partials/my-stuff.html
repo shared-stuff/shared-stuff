@@ -7,7 +7,7 @@
     <button class="btn btn-primary" ng-click="addStuff()">Add Stuff</button>
 </div>
 
-<div class="alert alert-info" ng-hide="stuffList.length>0">
+<div class="alert alert-info" ng-show="status=='LOADED' && stuffList.length==0">
     You have no stuff? I can't believe that. Please add something!
 </div>
 

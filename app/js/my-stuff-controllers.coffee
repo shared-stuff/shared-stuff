@@ -17,6 +17,7 @@ MyStuffController = ($scope, stuffDAO)->
   stuffDAO.list (restoredStuffList)->
     $scope.stuffList = restoredStuffList
     $scope.isAddStuffFormHidden = $scope.stuffList.length > 0
+    $scope.status = "LOADED"
     $scope.$digest()
 
   $scope.showAddForm = ()->

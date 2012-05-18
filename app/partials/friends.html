@@ -21,7 +21,7 @@
     <button class="btn btn-primary" ng-click="closeInviteFriend()" id="closeInviteFriend">OK</button>
 </div>
 
-<div class="alert alert-info" ng-hide="friendList.length>0">
+<div class="alert alert-info" ng-show="status=='LOADED' && friendList.length==0">
     You have no friends? I can't believe that. Please add some!
 </div>
 
