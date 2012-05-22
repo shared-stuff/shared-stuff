@@ -27,9 +27,12 @@
     <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant />
 </div>
 
+<div class="alert alert-info" ng-show="stuffList.length>0 && filteredStuffList.length==0">
+    Sorry but I found nothing for your search query.
+</div>
 
 <ul class="unstyled stuffList">
-    <li ng-repeat="stuff in stuffList | filter:searchQuery | orderBy:sortAttribute">
+    <li ng-repeat="stuff in filteredStuffList | orderBy:sortAttribute">
         <h3>{{stuff.title}}</h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
         <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})</div>

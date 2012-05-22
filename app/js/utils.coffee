@@ -74,6 +74,21 @@ applyIfNeeded = ($scope,f)->
   else
     $scope.$apply(f)
 
+
+search = (list,query) ->
+  if !isBlank(query)
+    searchWords = query.toLowerCase().split(/\s+/g)
+    return _.filter(list, (item) ->
+      for key,value of item
+        if (typeof value)  == 'string'
+          valueLowerCase =  value.toLowerCase()
+          if _.all(searchWords, (sw) -> valueLowerCase.indexOf(sw)>=0)
+            return true
+      return false
+    )
+  else
+    return list
+
 this.utils =
   log: log
   focus: focus
@@ -84,3 +99,4 @@ this.utils =
   isBlank: isBlank
   focusAndSelect: focusAndSelect
   applyIfNeeded: applyIfNeeded
+  search: search
