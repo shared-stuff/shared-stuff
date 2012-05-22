@@ -24,11 +24,16 @@ describe('search', function () {
             description: 'Great Book'
         },{
             name:'Good Fight Club',
-            description: 'Great MovIe'
+            description: 'Great MovIe',
+            owner:{
+                name: 'shybyte'
+            }
         },{
             name:'Bike 1',
-            description: 'Good for little tours.'
-
+            description: 'Good for little tours.',
+            owner:{
+                name: 'shybyte'
+            }
         }
         ]
     });
@@ -41,7 +46,7 @@ describe('search', function () {
         expect(search(items,'Movie')).toEqual([items[1]])
     });
 
-    it('should find items which contain every search token (and)', function () {
+    it('should find items which contain every search token (and combination)', function () {
         expect(search(items,'good tours')).toEqual([items[2]])
     });
 
@@ -51,6 +56,14 @@ describe('search', function () {
 
     it('should search only strings', function () {
         expect(search(items,'1')).toEqual([items[2]])
+    });
+
+    it('should search inside complex attributes', function () {
+        expect(search(items,'shybyte')).toEqual([items[1],items[2]])
+    });
+
+    it('should only need one token to match inside complex attributes', function () {
+        expect(search(items,'shybyte bike')).toEqual([items[2]])
     });
 
 });

@@ -75,17 +75,23 @@ applyIfNeeded = ($scope,f)->
     $scope.$apply(f)
 
 
+collectTokenStringFromItem = (item) ->
+  searchString = ''
+  for key,value of item
+    if (typeof value)  == 'string'
+      searchString += ' '+value.toLowerCase()
+    else if (typeof value)  == 'object'
+      searchString += ' '+collectTokenStringFromItem(value)
+  return searchString
+
+matchesSearchTokens = (item,searchTokens) ->
+  tokenString = collectTokenStringFromItem(item)
+  return _.all(searchTokens, (sw) -> tokenString.indexOf(sw)>=0)
+
 search = (list,query) ->
   if !isBlank(query)
-    searchWords = query.toLowerCase().split(/\s+/g)
-    return _.filter(list, (item) ->
-      for key,value of item
-        if (typeof value)  == 'string'
-          valueLowerCase =  value.toLowerCase()
-          if _.all(searchWords, (sw) -> valueLowerCase.indexOf(sw)>=0)
-            return true
-      return false
-    )
+    searchTokens = query.toLowerCase().split(/\s+/g)
+    return _.filter(list, (item) -> matchesSearchTokens(item,searchTokens))
   else
     return list
 

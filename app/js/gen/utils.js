@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var applyIfNeeded, charsForRange, cleanObjectFromAngular, defer, doNothing, focus, focusAndSelect, isBlank, log, randomArrayElement, randomString, randomStringCharacterRange, search, x,
+  var applyIfNeeded, charsForRange, cleanObjectFromAngular, collectTokenStringFromItem, defer, doNothing, focus, focusAndSelect, isBlank, log, matchesSearchTokens, randomArrayElement, randomString, randomStringCharacterRange, search, x,
     __hasProp = Object.prototype.hasOwnProperty;
 
   log = function(t) {
@@ -96,24 +96,34 @@
     }
   };
 
+  collectTokenStringFromItem = function(item) {
+    var key, searchString, value;
+    searchString = '';
+    for (key in item) {
+      value = item[key];
+      if ((typeof value) === 'string') {
+        searchString += ' ' + value.toLowerCase();
+      } else if ((typeof value) === 'object') {
+        searchString += ' ' + collectTokenStringFromItem(value);
+      }
+    }
+    return searchString;
+  };
+
+  matchesSearchTokens = function(item, searchTokens) {
+    var tokenString;
+    tokenString = collectTokenStringFromItem(item);
+    return _.all(searchTokens, function(sw) {
+      return tokenString.indexOf(sw) >= 0;
+    });
+  };
+
   search = function(list, query) {
-    var searchWords;
+    var searchTokens;
     if (!isBlank(query)) {
-      searchWords = query.toLowerCase().split(/\s+/g);
+      searchTokens = query.toLowerCase().split(/\s+/g);
       return _.filter(list, function(item) {
-        var key, value, valueLowerCase;
-        for (key in item) {
-          value = item[key];
-          if ((typeof value) === 'string') {
-            valueLowerCase = value.toLowerCase();
-            if (_.all(searchWords, function(sw) {
-              return valueLowerCase.indexOf(sw) >= 0;
-            })) {
-              return true;
-            }
-          }
-        }
-        return false;
+        return matchesSearchTokens(item, searchTokens);
       });
     } else {
       return list;
