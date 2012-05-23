@@ -16,5 +16,6 @@
         <h3><a href="#/mystuff/{{stuff.id}}">{{stuff.title || "Untitled"}}</a></h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
         <span ng-show="stuff.visibility == 'public'" class="owner visibility">Public</span>
+        <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More&hellip;</a>
     </li>
 </ul>

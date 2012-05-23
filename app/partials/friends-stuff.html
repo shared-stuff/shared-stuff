@@ -35,6 +35,6 @@
     <li ng-repeat="stuff in filteredStuffList | orderBy:sortAttribute">
         <h3>{{stuff.title}}</h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
-        <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})</div>
+        <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}}) <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More...</a></div>
     </li>
 </ul>

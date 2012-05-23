@@ -1,9 +1,15 @@
 <form name="itemForm" class="itemForm">
-<label for="title">Title</label>
-<input id="title" name="title" ng-model="stuff.title" ng-model-instant autofocus="autofocus" required/>
-<div class="error" ng-show="itemForm.title.$error.required && showValidationErrors">Title is required!</div>
-<label for="description">Description</label>
-<textarea name="description" id="description" cols="30" rows="10" ng-model="stuff.description"></textarea><br>
-<label for="description">Visibility</label>
-<select id="visibility" ng-options="key as value for (key , value) in circles" ng-model="stuff.visibility"></select>
+    <label for="title">Title</label>
+    <input id="title" name="title" ng-model="stuff.title" ng-model-instant autofocus="autofocus" required/>
+
+    <div class="error" ng-show="itemForm.title.$error.required && showValidationErrors">Title is required!</div>
+
+    <label for="description">Description</label>
+    <textarea name="description" id="description" cols="30" rows="10" ng-model="stuff.description"></textarea><br>
+
+    <label for="link">Link</label>
+    <input id="link" name="link" ng-model="stuff.link" ng-model-instant/>
+
+    <label for="description">Visibility</label>
+    <select id="visibility" ng-options="key as value for (key , value) in circles" ng-model="stuff.visibility"></select>
 </form>

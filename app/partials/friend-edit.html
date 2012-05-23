@@ -22,6 +22,7 @@
     <li ng-repeat="stuff in stuffList | orderBy:'title'">
         <h3>{{stuff.title}}</h3>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
-        <div class="owner">{{ stuff.modified | date}}</div>
+        <div class="owner">{{ stuff.modified | date}} <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More &hellip;</a></div>
+
     </li>
 </ul>
