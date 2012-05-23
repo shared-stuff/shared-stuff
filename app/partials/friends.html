@@ -14,10 +14,10 @@
 <div class="addItemForm itemForm" ng-hide="isInviteFriendFormHidden">
     <h3>Invite Friend</h3>
     <label for="inviteUrl">To invite a friend and share your stuff with your friend, send this link</label>
-    <input id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus"/>
+    <input class="urlDisplay" id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus" app-select-on-focus/>
     <h3>Invite Public</h3>
     <label for="publicInviteUrl">To invite the public and share your stuff with the public, send this link</label>
-    <input id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl" ng-model-instant/>
+    <input class="urlDisplay" id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl" ng-model-instant app-select-on-focus/>
     <button class="btn btn-primary" ng-click="closeInviteFriend()" id="closeInviteFriend">OK</button>
 </div>
 

@@ -10,8 +10,11 @@ angular.module('myApp.directives', []).
   }]).directive('appSelectOnFocus', [function(version) {
     return function(scope, elm, attrs) {
         elm.bind('focus', function(event) {
-            elm.select();
+            setTimeout(function () {
+                elm.select();
+            },100);
         });
     };
 }]);;
+
 
