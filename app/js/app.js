@@ -20,7 +20,8 @@ angular.module('myApp', ['ngSanitize','myApp.filters', 'myApp.services', 'myApp.
 
     $routeProvider.when('/friends-stuff', {template: 'partials/friends-stuff.html', controller: FriendsStuffController});
 
-    $routeProvider.when('/account', {template: 'partials/account.html', controller: AccountController});
+    $routeProvider.when('/account', {template: 'partials/profile.html', controller: ProfileController});
+    $routeProvider.when('/profile', {template: 'partials/profile.html', controller: ProfileController});
     $routeProvider.when('/export', {template: 'partials/account-export.html', controller: ExportController});
     $routeProvider.when('/import', {template: 'partials/account-import.html', controller: ImportController});
     $routeProvider.when('/settings', {template: 'partials/account-settings.html', controller: AccountController});

@@ -1,5 +1,5 @@
 (function() {
-  var Friend, Stuff;
+  var Friend, Profile, Stuff;
 
   Stuff = (function() {
 
@@ -42,8 +42,23 @@
 
   })();
 
+  Profile = (function() {
+
+    function Profile(props) {
+      props = props || {};
+      this.name = props.name || '';
+      this.email = props.email || '';
+      this.image = props.image || '';
+    }
+
+    return Profile;
+
+  })();
+
   this.Stuff = Stuff;
 
   this.Friend = Friend;
+
+  this.Profile = Profile;
 
 }).call(this);

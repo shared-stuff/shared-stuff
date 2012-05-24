@@ -1,9 +1,28 @@
 (function() {
-  var AccountController, ExportController, ImportController, focus, log;
+  var AccountController, ExportController, ImportController, ProfileController, focus, log;
 
   log = utils.log;
 
   focus = utils.focus;
+
+  ProfileController = function($scope, settingsDAO) {
+    var settings;
+    settings = {};
+    settingsDAO.readSettings(function(settingsArg) {
+      settings = settingsArg;
+      $scope.profile = new Profile(settings.profile);
+      return $scope.$digest();
+    });
+    return $scope.save = function() {
+      log("Start save");
+      settings.profile = $scope.profile;
+      return settingsDAO.saveSettings(function() {
+        return log("Profile Saved");
+      });
+    };
+  };
+
+  ProfileController.$inject = ['$scope', 'settingsDAO'];
 
   AccountController = function($scope, settingsDAO) {
     $scope.secret = "Loading secret ...";
@@ -65,5 +84,7 @@
   this.ExportController = ExportController;
 
   this.ImportController = ImportController;
+
+  this.ProfileController = ProfileController;
 
 }).call(this);

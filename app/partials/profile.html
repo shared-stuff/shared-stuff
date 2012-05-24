@@ -1,0 +1,19 @@
+<div style="float:right;" ng-include src="'partials/account-menu.html'">Loading...</div>
+<h2>Account / Profile</h2>
+
+<form name="itemForm" class="itemForm">
+    <label for="name">Name</label>
+    <input id="name" name="name" ng-model="profile.name" ng-model-instant autofocus="autofocus"/>
+
+    <label for="email">eMail Address</label>
+    <input id="email" name="email" ng-model="profile.email" ng-model-instant
+            type="email" />
+
+    <label for="image">Image Url</label>
+    <input id="image" name="image" ng-model="profile.image" ng-model-instant/>
+
+    <button class="btn btn-primary" ng-click="save()">Save</button>
+
+</form>
+
+<img ng-src="{{profile.image}}" class="profileImage"/>

@@ -1,6 +1,24 @@
 log = utils.log
 focus = utils.focus
 
+ProfileController = ($scope,settingsDAO)->
+  settings = {}
+  settingsDAO.readSettings( (settingsArg) ->
+    settings = settingsArg;
+    $scope.profile = new Profile(settings.profile)
+    $scope.$digest()
+  )
+
+  $scope.save = ->
+    log("Start save")
+    settings.profile = $scope.profile
+    settingsDAO.saveSettings( ->
+      log("Profile Saved")
+    )
+
+ProfileController.$inject = ['$scope','settingsDAO']
+
+
 
 AccountController = ($scope,settingsDAO)->
   $scope.secret = "Loading secret ..."
@@ -54,3 +72,4 @@ ImportController.$inject = ['$scope', 'friendDAO', 'stuffDAO']
 this.AccountController = AccountController
 this.ExportController = ExportController
 this.ImportController = ImportController
+this.ProfileController = ProfileController

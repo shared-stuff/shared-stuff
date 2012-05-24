@@ -27,8 +27,15 @@ class Friend
       @name = @userAddress
 
 
+class Profile
+  constructor: (props)->
+    props = props || {}
+    @name = props.name || ''
+    @email = props.email || ''
+    @image = props.image || ''
 
 
 # export
 this.Stuff = Stuff
 this.Friend = Friend
+this.Profile = Profile

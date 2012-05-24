@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_SECRET_KEY, MY_STUFF_KEY, MyStuffDAO, PUBLIC_KEY, PUBLIC_PREFIX, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, isBlank, log, randomString, rs, settingsDAO,
+  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PUBLIC_KEY, PUBLIC_PREFIX, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, isBlank, log, randomString, rs, settingsDAO,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -183,8 +183,6 @@
 
   })();
 
-  MY_SECRET_KEY = "mySecret";
-
   SettingsDAO = (function() {
 
     function SettingsDAO() {
@@ -206,9 +204,7 @@
           self.settings = settings;
           if (!settings.secret) {
             settings.secret = randomString(20);
-            return rs.setItem(RS_CATEGORY, self.key, JSON.stringify(settings), function() {
-              return callback(settings);
-            });
+            return self.saveSettings(callback);
           } else {
             return callback(settings);
           }
@@ -221,6 +217,14 @@
       self = this;
       return this.readSettings(function(settings) {
         return callback(settings.secret);
+      });
+    };
+
+    SettingsDAO.prototype.saveSettings = function(callback) {
+      var self;
+      self = this;
+      return rs.setItem(RS_CATEGORY, self.key, JSON.stringify(self.settings), function() {
+        return callback(self.settings);
       });
     };
 

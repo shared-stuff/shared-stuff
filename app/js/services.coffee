@@ -101,7 +101,6 @@ class LocalStorageDAO
     @save(_.without(items, oldItem))
 
 
-MY_SECRET_KEY = "mySecret"
 class SettingsDAO
   constructor: () ->
     @settings = null
@@ -118,9 +117,7 @@ class SettingsDAO
           self.settings = settings
           if (!settings.secret)
             settings.secret = randomString(20)
-            rs.setItem(RS_CATEGORY, self.key, JSON.stringify(settings), ()->
-                callback(settings)
-            )
+            self.saveSettings(callback)
           else
             callback(settings)
       )
@@ -129,6 +126,12 @@ class SettingsDAO
     self = this
     @readSettings (settings)->
       callback(settings.secret)
+
+  saveSettings: (callback) ->
+    self = this
+    rs.setItem(RS_CATEGORY, self.key, JSON.stringify(self.settings), ()->
+      callback(self.settings)
+    )
 
 
 class FriendsStuffDAO
