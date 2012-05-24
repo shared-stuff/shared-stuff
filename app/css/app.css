@@ -34,11 +34,14 @@ h2 {
 
 .navbar .brand {
     color: #fa0;
+    padding: 1px 10px;
+    /*
     font-family: 'Henny Penny', cursive;
     font-size: 30px;
     position: relative;
     top: 8px;
     text-shadow: 1px 2px 3px #e80;
+    */
 }
 
 .navbar ul,
