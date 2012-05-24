@@ -15,6 +15,7 @@
 
   AppController = function($scope, $location, settingsDAO) {
     var onRouteChange;
+    $scope.isAppLoaded = false;
     $scope.session = {
       userAddress: localStorage.getItem('userAddress'),
       isLoggedIn: false
@@ -46,6 +47,9 @@
       }
     };
     return remoteStorageUtils.isLoggedOn(function(isLoggedOn) {
+      applyIfNeeded($scope, function() {
+        return $scope.isAppLoaded = true;
+      });
       if (isLoggedOn) {
         $scope.setLoggenOn();
       } else {

@@ -7,6 +7,7 @@ needsUserLoggedIn = (path)->
 
 
 AppController = ($scope,$location,settingsDAO)->
+  $scope.isAppLoaded = false;
   $scope.session = {
     userAddress: localStorage.getItem('userAddress')
     isLoggedIn: false
@@ -37,6 +38,7 @@ AppController = ($scope,$location,settingsDAO)->
       )
 
   remoteStorageUtils.isLoggedOn (isLoggedOn) ->
+    applyIfNeeded($scope, -> $scope.isAppLoaded = true);
     if (isLoggedOn)
       $scope.setLoggenOn()
     else
@@ -48,9 +50,7 @@ AppController = ($scope,$location,settingsDAO)->
     $scope.$on('$beforeRouteChange', onRouteChange)
 
 
-
 AppController.$inject = ['$scope','$location','settingsDAO']
-
 
 #export
 this.AppController = AppController
