@@ -1,4 +1,4 @@
-<div class="btn-group rightHeaderButtons" >
+<div class="btn-group rightHeaderButtons">
     <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
         Sort By {{sortAttributeNames[sortAttribute]}} <span class="caret"></span>
     </a>
@@ -14,7 +14,8 @@
 
 <div class="alert alert-info" ng-show="status == 'NO_FRIENDS'">
     It seems that you have no friends. You can change this by <a href="#/friends">adding some friends</a>.
-    If you have no Shared Stuff friends yet, you can <a href="#addFriend/shybyte@owncube.com">add shybyte</a> as a friend.
+    If you have no Shared Stuff friends yet, you can <a href="#addFriend/shybyte@owncube.com">add shybyte</a> as a
+    friend.
     He's the programmer of Shared Stuff.
 </div>
 
@@ -24,7 +25,7 @@
 </div>
 
 <div class="" ng-show="status == 'LOADED' && stuffList.length>0">
-    <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant />
+    <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant/>
 </div>
 
 <div class="alert alert-info" ng-show="stuffList.length>0 && filteredStuffList.length==0">
@@ -33,8 +34,12 @@
 
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in filteredStuffList | orderBy:sortAttribute">
+
         <h3>{{stuff.title}}</h3>
+        <span stuff-image src="{{stuff.image}}"/>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
-        <div class="owner"> <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}}) <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More...</a></div>
+
+        <div class="owner"><a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})
+            <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a></div>
     </li>
 </ul>

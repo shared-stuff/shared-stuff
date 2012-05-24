@@ -17,8 +17,9 @@
     <ul class="unstyled stuffList friendStuffList">
         <li ng-repeat="stuff in stuffList | orderBy:'title'">
             <h3>{{stuff.title}}</h3>
+            <span stuff-image src="{{stuff.image}}"/>
             <p class="description" ng-bind-html="stuff.description | linky"></p>
-            <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More...</a>
+            <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a>
         </li>
     </ul>
 

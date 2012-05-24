@@ -9,6 +9,7 @@
       this.description = (props != null ? props.description : void 0) || '';
       this.visibility = (props != null ? props.visibility : void 0) || "friends";
       this.link = (props != null ? props.link : void 0) || '';
+      this.image = (props != null ? props.image : void 0) || '';
       time = new Date().getTime();
       this.id = (props != null ? props.id : void 0) || '' + time;
       this.created = (props != null ? props.created : void 0) || time;

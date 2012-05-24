@@ -14,8 +14,9 @@
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in stuffList | orderBy:'title'">
         <h3><a href="#/mystuff/{{stuff.id}}">{{stuff.title || "Untitled"}}</a></h3>
+        <span stuff-image src="{{stuff.image}}"/>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
         <span ng-show="stuff.visibility == 'public'" class="owner visibility">Public</span>
-        <a ng-show="stuff.link" href="{{stuff.link}}" target="link">More&hellip;</a>
+        <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a>
     </li>
 </ul>

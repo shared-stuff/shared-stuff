@@ -51,7 +51,9 @@ h2 {
 /*Stuff List*/
 
 .stuffList > li {
-    margin-bottom: 1.5em;
+    margin-bottom: 2em;
+    clear: both;
+    overflow: hidden;
 }
 
 .visibility {
@@ -67,7 +69,15 @@ h2 {
     margin-top: 1.5em;
 }
 
+.stuffImageBox {
+    /* float: left;*/
+}
 
+.stuffImageBox img{
+    max-width: 600px;
+    max-height: 200px;
+    border-radius: 5px;
+}
 
 
 /* Left Menu */
