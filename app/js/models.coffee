@@ -1,3 +1,5 @@
+isBlank = utils.isBlank
+
 class Stuff
   constructor: (props)->
     @title = props?.title || ''
@@ -33,6 +35,8 @@ class Profile
     @name = props.name || ''
     @email = props.email || ''
     @image = props.image || ''
+
+  @isEmpty: -> isBlank(@name) && isBlank(@email) && isBlank(@image)
 
 
 # export

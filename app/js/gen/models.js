@@ -1,5 +1,7 @@
 (function() {
-  var Friend, Profile, Stuff;
+  var Friend, Profile, Stuff, isBlank;
+
+  isBlank = utils.isBlank;
 
   Stuff = (function() {
 
@@ -50,6 +52,10 @@
       this.email = props.email || '';
       this.image = props.image || '';
     }
+
+    Profile.isEmpty = function() {
+      return isBlank(this.name) && isBlank(this.email) && isBlank(this.image);
+    };
 
     return Profile;
 

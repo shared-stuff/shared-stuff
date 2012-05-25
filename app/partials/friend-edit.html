@@ -9,29 +9,14 @@
 </div>
 <h2>{{friend.name || "No Name"}}</h2></div>
 
-<img style="float: left;margin-right: 1em;" ng-src="{{profile.image}}" class="profileImage"/>
+<div ng-include src="'partials/profile-display.html'">Loading...</div>
 
-<table class="profileTable">
-    <tr>
-        <td><label>Profile Name</label></td>
-        <td>{{profile.name}}</td>
-    </tr>
-    <tr>
-        <td><label>eMail</label></td>
-        <td><a href="mailto:{{profile.email}}">{{profile.email}}</a></td>
-    </tr>
-    <tr>
-        <td><label>Remote Storage ID</label></td>
-        <td>{{friend.userAddress}}</a></td>
-    </tr>
-</table>
-
-<div ng-hide="!editMode" class="clearLeft">
+<div ng-hide="!editMode" class="clearLeft addItemForm">
     <div ng-include src="'partials/friend-form.html'">Loading...</div>
     <button class="btn btn-primary" ng-click="save()">Save</button>
 </div>
 
-<h2 class="clearLeft" style="margin-top: 4em;">{{friend.name || "No Name"}}'s Stuff</h2>
+<h2 class="clearLeft" style="margin-top: 1em;">{{friend.name || "No Name"}}'s Stuff:</h2>
 
 <ul class="unstyled stuffList friendStuffList">
     <li ng-repeat="stuff in stuffList | orderBy:'title'">

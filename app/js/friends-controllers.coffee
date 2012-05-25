@@ -16,7 +16,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
     $scope.friendList = restoredFriendList
     $scope.isAddFriendFormHidden = $scope.friendList.length>0
     if ($routeParams.userAddress)
-      $scope.friend = new Friend({userAddress:$routeParams.userAddress,secret:$routeParams.secret})
+      $scope.friend = new Friend({name: $routeParams.name,userAddress: $routeParams.userAddress,secret:$routeParams.secret})
       $scope.isAddFriendFormHidden = false
     $scope.status = 'LOADED'
     $scope.$digest();
@@ -79,19 +79,21 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   $scope.profile = {}
   $scope.showValidationErrors=true
 
-  friendDAO.getItem($routeParams.id,(friend)->
-    $scope.friend = new Friend(friend)
-    $scope.$digest()
-    friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
-        $scope.stuffList = friendStuff
-        $scope.$digest()
-    )
-    profileDAO.getByFriend(friend,(profile) ->
-      $scope.profile = profile
-      log(profile)
+  loadFriend = ->
+    friendDAO.getItem($routeParams.id,(friend)->
+      $scope.friend = new Friend(friend)
       $scope.$digest()
+      friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
+          $scope.stuffList = friendStuff
+          $scope.$digest()
+      )
+      profileDAO.getByFriend(friend,(profile) ->
+        $scope.profile = new Profile(profile)
+        $scope.$digest()
+      )
     )
-  )
+
+  loadFriend()
 
   redirectToList = ->
     $scope.$apply( ->
@@ -102,7 +104,10 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
     $scope.friend.sanitize()
     friendsStuffDAO.validateFriend($scope.friend, (errors)->
       if errors.length==0
-        friendDAO.saveItem($scope.friend,redirectToList)
+        friendDAO.saveItem($scope.friend,->
+          $scope.editMode = false
+          loadFriend()
+        )
       else
         window.alert(errors.join(',')+" seems invalid")
     )
@@ -118,21 +123,31 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
 FriendEditController.$inject = ['$scope','friendDAO','friendsStuffDAO','profileDAO','$routeParams','$location']
 
 
-FriendViewController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)->
+FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->
   $scope.stuffList = []
   friend = new Friend({userAddress:$routeParams.userAddress,secret:$routeParams.secret})
   $scope.friend = friend
+  $scope.profile = {}
 
   friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
     $scope.stuffList = friendStuff
     $scope.$digest()
   )
 
+  profileDAO.getByFriend(friend,(profile) ->
+    $scope.profile = new Profile(profile)
+    if profile.name
+      friend.name = profile.name
+    else
+      friend.name = friend.userAddress.replace(/@.*$/,'') || 'unkown'
+    $scope.$digest()
+  )
+
   $scope.addFriend = ->
-    $location.path('/addFriend/'+friend.userAddress+'/'+friend.secret)
+    $location.path('/addFriend/'+friend.name+'/'+friend.userAddress+'/'+friend.secret)
 
 
-FriendViewController.$inject = ['$scope','friendDAO','friendsStuffDAO','$routeParams','$location']
+FriendViewController.$inject = ['$scope','friendDAO','friendsStuffDAO','profileDAO','$routeParams','$location']
 
 ShareStuffController = ($scope,settingsDAO)->
     settingsDAO.getSecret (secret) ->

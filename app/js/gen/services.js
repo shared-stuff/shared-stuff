@@ -252,7 +252,7 @@
       } else {
         return rs.getItem('public', self.key, function(error, data) {
           self.profile = JSON.parse(data || '{}');
-          return callback(self.profile);
+          return callback(new Profile(self.profile));
         });
       }
     };
@@ -267,7 +267,9 @@
     };
 
     ProfileDAO.prototype.getByFriend = function(friend, callback) {
-      return this.publicRemoteStorageService.get(friend.userAddress, this.key, {}, callback);
+      return this.publicRemoteStorageService.get(friend.userAddress, this.key, {}, function(result) {
+        return callback(new Profile(result));
+      });
     };
 
     return ProfileDAO;

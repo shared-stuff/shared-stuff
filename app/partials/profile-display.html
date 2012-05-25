@@ -1,0 +1,23 @@
+<div>
+    <img style="float: left;margin-right: 1em;" ng-src="{{profile.image}}" class="profileImage" ng-show="profile.image"/>
+
+    <table class="profileTable">
+        <tr ng-show="profile.name">
+            <td><label>Profile Name</label></td>
+            <td>{{profile.name}}</td>
+        </tr>
+        <tr ng-show="profile.email">
+            <td><label>eMail</label></td>
+            <td><a href="mailto:{{profile.email}}">{{profile.email}}</a></td>
+        </tr>
+        <tr ng-show="friend.userAddress">
+            <td><label>Remote Storage ID</label></td>
+            <td>{{friend.userAddress}}</a></td>
+        </tr>
+        <tr ng-show="friend.secret">
+            <td><label>Secret</label></td>
+            <td>{{friend.secret}}</a></td>
+        </tr>
+    </table>
+</div>
+<div class="clearLeft"></div>
