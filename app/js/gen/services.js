@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PUBLIC_KEY, PUBLIC_PREFIX, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, isBlank, log, randomString, rs, settingsDAO,
+  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, isBlank, log, publicRemoteStorageService, randomString, rs, settingsDAO,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -23,6 +23,8 @@
   PUBLIC_PREFIX = "sharedstuff-";
 
   PUBLIC_KEY = "public";
+
+  PROFILE_KEY = PUBLIC_PREFIX + "profile";
 
   rs = remoteStorageUtils;
 
@@ -232,31 +234,98 @@
 
   })();
 
+  ProfileDAO = (function() {
+
+    function ProfileDAO(publicRemoteStorageService) {
+      this.publicRemoteStorageService = publicRemoteStorageService;
+      this.profile = null;
+      this.key = PROFILE_KEY;
+    }
+
+    ProfileDAO.prototype.load = function(callback) {
+      var self;
+      self = this;
+      if (self.profile) {
+        return defer(function() {
+          return callback(self.profile);
+        });
+      } else {
+        return rs.getItem('public', self.key, function(error, data) {
+          return self.profile = JSON.parse(data || '{}');
+        });
+      }
+    };
+
+    ProfileDAO.prototype.save = function(profile, callback) {
+      var self;
+      self = this;
+      self.profile = profile;
+      return rs.setItem('public', self.key, JSON.stringify(self.profile), function() {
+        return callback(self.profile);
+      });
+    };
+
+    ProfileDAO.prototype.getByFriend = function(friend, callback) {
+      return this.publicRemoteStorageService.get(friend.userAddress, self.key, {}, callback);
+    };
+
+    return ProfileDAO;
+
+  })();
+
+  PublicRemoteStorageService = (function() {
+
+    function PublicRemoteStorageService() {
+      this.clientByUserAddress = {};
+    }
+
+    PublicRemoteStorageService.prototype.get = function(userAddress, key, defaultValue, callback) {
+      var self;
+      self = this;
+      if (!userAddress) {
+        log("Missing UserAdress!");
+        return callback(defaultValue);
+      } else if (this.clientByUserAddress[userAddress]) {
+        return this.getByClient(this.clientByUserAddress[userAddress], key, defaultValue, callback);
+      } else {
+        return remoteStorage.getStorageInfo(userAddress, function(error, storageInfo) {
+          var client;
+          if (storageInfo) {
+            client = remoteStorage.createClient(storageInfo, 'public');
+            self.clientByUserAddress[userAddress] = client;
+            return self.getByClient(client, key, defaultValue, callback);
+          } else {
+            log(error);
+            return callback(defaultValue, error);
+          }
+        });
+      }
+    };
+
+    PublicRemoteStorageService.prototype.getByClient = function(client, key, defaultValue, callback) {
+      return client.get(key, function(err, data) {
+        if (data) {
+          return callback(JSON.parse(data));
+        } else {
+          return callback(defaultValue);
+        }
+      });
+    };
+
+    return PublicRemoteStorageService;
+
+  })();
+
   FriendsStuffDAO = (function() {
 
-    function FriendsStuffDAO(friendDAO) {
+    function FriendsStuffDAO(friendDAO, publicRemoteStorageDAO) {
       this.friendDAO = friendDAO;
+      this.publicRemoteStorageDAO = publicRemoteStorageDAO;
       this.friendsStuffList = [];
     }
 
     FriendsStuffDAO.prototype.listStuffByFriend = function(friend, callback) {
-      if (friend.userAddress) {
-        return remoteStorage.getStorageInfo(friend.userAddress, function(error, storageInfo) {
-          var client;
-          client = remoteStorage.createClient(storageInfo, 'public');
-          if (storageInfo) {
-            return client.get(getFriendStuffKey(friend), function(err, data) {
-              if (data) {
-                return callback(JSON.parse(data || '[]'));
-              } else {
-                return callback([]);
-              }
-            });
-          } else {
-            return log(error);
-          }
-        });
-      }
+      return this.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], callback);
     };
 
     FriendsStuffDAO.prototype.validateFriend = function(friend, callback) {
@@ -340,6 +409,8 @@
 
   settingsDAO = new SettingsDAO();
 
-  angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO));
+  publicRemoteStorageService = new PublicRemoteStorageService();
+
+  angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService));
 
 }).call(this);

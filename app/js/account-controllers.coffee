@@ -1,24 +1,21 @@
 log = utils.log
 focus = utils.focus
 
-ProfileController = ($scope,settingsDAO)->
-  settings = {}
-  settingsDAO.readSettings( (settingsArg) ->
-    settings = settingsArg;
-    $scope.profile = new Profile(settings.profile)
+ProfileController = ($scope,profileDAO)->
+  profileDAO.load( (profile) ->
+    $scope.profile = new Profile(profile)
     $scope.$digest()
   )
 
   $scope.save = ->
-    settings.profile = $scope.profile
-    settingsDAO.saveSettings( ->
+    profileDAO.save($scope.profile, ->
       $('#savedAlert').addClass('in').removeClass('out')
       setTimeout( ->
         $('#savedAlert').addClass('out').removeClass('in')
       ,5000)
     )
 
-ProfileController.$inject = ['$scope','settingsDAO']
+ProfileController.$inject = ['$scope','profileDAO']
 
 
 

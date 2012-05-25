@@ -21,7 +21,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
       filterStuffList();
       $scope.$digest();
       if (status == 'LOADED')
-        refreshTimeout = setTimeout(startRefresh,60000)
+        #refreshTimeout = setTimeout(startRefresh,60000)
 
   $defer ->
       friendsStuffDAO.clearCache()

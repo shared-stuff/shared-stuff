@@ -5,17 +5,13 @@
 
   focus = utils.focus;
 
-  ProfileController = function($scope, settingsDAO) {
-    var settings;
-    settings = {};
-    settingsDAO.readSettings(function(settingsArg) {
-      settings = settingsArg;
-      $scope.profile = new Profile(settings.profile);
+  ProfileController = function($scope, profileDAO) {
+    profileDAO.load(function(profile) {
+      $scope.profile = new Profile(profile);
       return $scope.$digest();
     });
     return $scope.save = function() {
-      settings.profile = $scope.profile;
-      return settingsDAO.saveSettings(function() {
+      return profileDAO.save($scope.profile, function() {
         $('#savedAlert').addClass('in').removeClass('out');
         return setTimeout(function() {
           return $('#savedAlert').addClass('out').removeClass('in');
@@ -24,7 +20,7 @@
     };
   };
 
-  ProfileController.$inject = ['$scope', 'settingsDAO'];
+  ProfileController.$inject = ['$scope', 'profileDAO'];
 
   AccountController = function($scope, settingsDAO) {
     $scope.secret = "Loading secret ...";
