@@ -147,6 +147,7 @@ class ProfileDAO
     else
       rs.getItem('public', self.key, (error, data)->
         self.profile = JSON.parse(data || '{}')
+        callback(self.profile)
       )
 
   save: (profile,callback) ->
@@ -157,7 +158,7 @@ class ProfileDAO
     )
 
   getByFriend: (friend,callback) ->
-    @publicRemoteStorageService.get(friend.userAddress,self.key,{}, callback)
+    @publicRemoteStorageService.get(friend.userAddress,@key,{}, callback)
 
 
 class PublicRemoteStorageService

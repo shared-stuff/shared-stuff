@@ -22,8 +22,13 @@ input[type="search"] {
 h2 {
     margin-bottom: 0.5em;
 }
+
 .rightHeaderButtons {
     float: right;
+}
+
+.clearLeft {
+    clear: left;
 }
 
 .fade {
@@ -93,7 +98,7 @@ h2 {
 }
 
 .friendStuffList {
-    margin-top: 1.5em;
+    margin-top: 1em;
 }
 
 .stuffImageBox {
@@ -230,4 +235,8 @@ h2 {
 
 .savedAlert {
     height: 2em;
+}
+
+.profileTable td{
+    padding-right: 0.5em;
 }

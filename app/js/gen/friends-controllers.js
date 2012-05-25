@@ -1,5 +1,5 @@
 (function() {
-  var FriendEditController, FriendViewController, FriendsController, ShareStuffController, buildInviteFriendUrl, buildPublicInviteUrl, focus, focusAndSelect, isBlank, log;
+  var FriendEditController, FriendViewController, FriendsController, ShareStuffController, applyIfNeeded, buildInviteFriendUrl, buildPublicInviteUrl, focus, focusAndSelect, isBlank, log;
 
   log = utils.log;
 
@@ -8,6 +8,8 @@
   focusAndSelect = utils.focusAndSelect;
 
   isBlank = utils.isBlank;
+
+  applyIfNeeded = utils.applyIfNeeded;
 
   FriendsController = function($scope, friendDAO, friendsStuffDAO, settingsDAO, $routeParams) {
     $scope.friendList = [];
@@ -81,17 +83,23 @@
 
   FriendsController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', 'settingsDAO', '$routeParams'];
 
-  FriendEditController = function($scope, friendDAO, friendsStuffDAO, $routeParams, $location) {
+  FriendEditController = function($scope, friendDAO, friendsStuffDAO, profileDAO, $routeParams, $location) {
     var redirectToList;
     $scope.friend = new Friend();
     $scope.editMode = false;
     $scope.stuffList = [];
+    $scope.profile = {};
     $scope.showValidationErrors = true;
     friendDAO.getItem($routeParams.id, function(friend) {
       $scope.friend = new Friend(friend);
       $scope.$digest();
-      return friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
+      friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
         $scope.stuffList = friendStuff;
+        return $scope.$digest();
+      });
+      return profileDAO.getByFriend(friend, function(profile) {
+        $scope.profile = profile;
+        log(profile);
         return $scope.$digest();
       });
     });
@@ -120,7 +128,7 @@
     };
   };
 
-  FriendEditController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', '$routeParams', '$location'];
+  FriendEditController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', 'profileDAO', '$routeParams', '$location'];
 
   FriendViewController = function($scope, friendDAO, friendsStuffDAO, $routeParams, $location) {
     var friend;

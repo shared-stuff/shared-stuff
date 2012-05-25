@@ -2,8 +2,10 @@ log = utils.log
 focus = utils.focus
 
 ProfileController = ($scope,profileDAO)->
+  log(["Loading Profile"])
   profileDAO.load( (profile) ->
     $scope.profile = new Profile(profile)
+    log(["Loaded Profile",profile])
     $scope.$digest()
   )
 

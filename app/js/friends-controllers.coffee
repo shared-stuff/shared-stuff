@@ -2,6 +2,7 @@ log = utils.log
 focus = utils.focus
 focusAndSelect = utils.focusAndSelect
 isBlank = utils.isBlank
+applyIfNeeded =  utils.applyIfNeeded
 
 
 
@@ -71,10 +72,11 @@ buildPublicInviteUrl = (userAddress,secret) ->
 FriendsController.$inject = ['$scope','friendDAO','friendsStuffDAO','settingsDAO','$routeParams']
 
 
-FriendEditController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)->
+FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->
   $scope.friend = new Friend()
   $scope.editMode = false
   $scope.stuffList = []
+  $scope.profile = {}
   $scope.showValidationErrors=true
 
   friendDAO.getItem($routeParams.id,(friend)->
@@ -83,6 +85,11 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)
     friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
         $scope.stuffList = friendStuff
         $scope.$digest()
+    )
+    profileDAO.getByFriend(friend,(profile) ->
+      $scope.profile = profile
+      log(profile)
+      $scope.$digest()
     )
   )
 
@@ -108,7 +115,7 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)
     if window.confirm("Do you really want to delete your friend \"#{$scope.friend.name}\"?")
       friendDAO.deleteItem($scope.friend.id,redirectToList)
 
-FriendEditController.$inject = ['$scope','friendDAO','friendsStuffDAO','$routeParams','$location']
+FriendEditController.$inject = ['$scope','friendDAO','friendsStuffDAO','profileDAO','$routeParams','$location']
 
 
 FriendViewController = ($scope,friendDAO,friendsStuffDAO,$routeParams,$location)->

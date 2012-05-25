@@ -251,7 +251,8 @@
         });
       } else {
         return rs.getItem('public', self.key, function(error, data) {
-          return self.profile = JSON.parse(data || '{}');
+          self.profile = JSON.parse(data || '{}');
+          return callback(self.profile);
         });
       }
     };
@@ -266,7 +267,7 @@
     };
 
     ProfileDAO.prototype.getByFriend = function(friend, callback) {
-      return this.publicRemoteStorageService.get(friend.userAddress, self.key, {}, callback);
+      return this.publicRemoteStorageService.get(friend.userAddress, this.key, {}, callback);
     };
 
     return ProfileDAO;

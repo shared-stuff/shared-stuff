@@ -6,8 +6,10 @@
   focus = utils.focus;
 
   ProfileController = function($scope, profileDAO) {
+    log(["Loading Profile"]);
     profileDAO.load(function(profile) {
       $scope.profile = new Profile(profile);
+      log(["Loaded Profile", profile]);
       return $scope.$digest();
     });
     return $scope.save = function() {
