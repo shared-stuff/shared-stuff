@@ -1,6 +1,8 @@
 <div style="float:right;" ng-include src="'partials/account-menu.html'">Loading...</div>
 <h2>Account / Profile</h2>
 
+
+
 <form name="itemForm" class="itemForm">
     <label for="name">Name</label>
     <input id="name" name="name" ng-model="profile.name" ng-model-instant autofocus="autofocus"/>
@@ -15,5 +17,9 @@
     <button class="btn btn-primary" ng-click="save()">Save</button>
 
 </form>
+
+<div id="savedAlert" class="alert savedAlert alert-success fade out">
+    Profile Saved.
+</div>
 
 <img ng-src="{{profile.image}}" class="profileImage"/>

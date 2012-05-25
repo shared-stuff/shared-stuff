@@ -14,10 +14,12 @@
       return $scope.$digest();
     });
     return $scope.save = function() {
-      log("Start save");
       settings.profile = $scope.profile;
       return settingsDAO.saveSettings(function() {
-        return log("Profile Saved");
+        $('#savedAlert').addClass('in').removeClass('out');
+        return setTimeout(function() {
+          return $('#savedAlert').addClass('out').removeClass('in');
+        }, 5000);
       });
     };
   };

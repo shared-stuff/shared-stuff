@@ -10,10 +10,12 @@ ProfileController = ($scope,settingsDAO)->
   )
 
   $scope.save = ->
-    log("Start save")
     settings.profile = $scope.profile
     settingsDAO.saveSettings( ->
-      log("Profile Saved")
+      $('#savedAlert').addClass('in').removeClass('out')
+      setTimeout( ->
+        $('#savedAlert').addClass('out').removeClass('in')
+      ,5000)
     )
 
 ProfileController.$inject = ['$scope','settingsDAO']
