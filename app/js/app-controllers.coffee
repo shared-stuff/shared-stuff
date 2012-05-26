@@ -15,6 +15,7 @@ AppController = ($scope,$location,settingsDAO)->
 
   $scope.logout = ->
     remoteStorageUtils.deleteToken();
+    localStorage.removeItem('userAddress')
     $scope.session = {
       userAddress: null
       isLoggedIn: false
@@ -26,6 +27,7 @@ AppController = ($scope,$location,settingsDAO)->
       userAddress: localStorage.getItem('userAddress')
       isLoggedIn: true
     }
+    $scope.isAppLoaded = true
     $scope.$digest();
 
   onRouteChange = ->
@@ -37,17 +39,22 @@ AppController = ($scope,$location,settingsDAO)->
         $location.path('/login').replace()
       )
 
-  remoteStorageUtils.isLoggedOn (isLoggedOn) ->
-    applyIfNeeded($scope, -> $scope.isAppLoaded = true);
-    if (isLoggedOn)
-      $scope.setLoggenOn()
-    else
-      $scope.session = {
-        userAddress: null
-        isLoggedIn: false
-      }
-      onRouteChange()
+  if $scope.session.userAddress
+    remoteStorageUtils.isLoggedOn (isLoggedOn) ->
+      if (isLoggedOn)
+        $scope.setLoggenOn()
+      else
+        $scope.session = {
+          userAddress: null
+          isLoggedIn: false
+        }
+        applyIfNeeded($scope, -> $scope.isAppLoaded = true)
+        onRouteChange()
+      $scope.$on('$beforeRouteChange', onRouteChange)
+  else
     $scope.$on('$beforeRouteChange', onRouteChange)
+    $scope.isAppLoaded = true
+
 
 
 AppController.$inject = ['$scope','$location','settingsDAO']

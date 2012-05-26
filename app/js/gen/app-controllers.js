@@ -22,6 +22,7 @@
     };
     $scope.logout = function() {
       remoteStorageUtils.deleteToken();
+      localStorage.removeItem('userAddress');
       $scope.session = {
         userAddress: null,
         isLoggedIn: false
@@ -33,6 +34,7 @@
         userAddress: localStorage.getItem('userAddress'),
         isLoggedIn: true
       };
+      $scope.isAppLoaded = true;
       return $scope.$digest();
     };
     onRouteChange = function() {
@@ -46,21 +48,26 @@
         });
       }
     };
-    return remoteStorageUtils.isLoggedOn(function(isLoggedOn) {
-      applyIfNeeded($scope, function() {
-        return $scope.isAppLoaded = true;
+    if ($scope.session.userAddress) {
+      return remoteStorageUtils.isLoggedOn(function(isLoggedOn) {
+        if (isLoggedOn) {
+          $scope.setLoggenOn();
+        } else {
+          $scope.session = {
+            userAddress: null,
+            isLoggedIn: false
+          };
+          applyIfNeeded($scope, function() {
+            return $scope.isAppLoaded = true;
+          });
+          onRouteChange();
+        }
+        return $scope.$on('$beforeRouteChange', onRouteChange);
       });
-      if (isLoggedOn) {
-        $scope.setLoggenOn();
-      } else {
-        $scope.session = {
-          userAddress: null,
-          isLoggedIn: false
-        };
-        onRouteChange();
-      }
-      return $scope.$on('$beforeRouteChange', onRouteChange);
-    });
+    } else {
+      $scope.$on('$beforeRouteChange', onRouteChange);
+      return $scope.isAppLoaded = true;
+    }
   };
 
   AppController.$inject = ['$scope', '$location', 'settingsDAO'];

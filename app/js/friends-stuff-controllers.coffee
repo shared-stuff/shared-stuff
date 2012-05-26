@@ -20,7 +20,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
         $scope.status = status
       filterStuffList();
       $scope.$digest();
-      if (status == 'LOADED')
+      #if (status == 'LOADED')
         #refreshTimeout = setTimeout(startRefresh,60000)
 
   $defer ->

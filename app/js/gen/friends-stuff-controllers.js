@@ -26,10 +26,7 @@
         $scope.stuffList = stuffList;
         if ($scope.status !== "LOADED") $scope.status = status;
         filterStuffList();
-        $scope.$digest();
-        if (status === 'LOADED') {
-          return refreshTimeout = setTimeout(startRefresh, 60000);
-        }
+        return $scope.$digest();
       });
     };
     $defer(function() {

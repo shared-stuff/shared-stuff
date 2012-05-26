@@ -159,8 +159,6 @@ ShareStuffController = ($scope,settingsDAO)->
 
 ShareStuffController.$inject = ['$scope','settingsDAO']
 
-
-
 #export
 this.FriendsController = FriendsController
 this.FriendEditController = FriendEditController
