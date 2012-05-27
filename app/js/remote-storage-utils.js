@@ -7,6 +7,12 @@ var remoteStorageUtils = (function () {
     var RS_TOKEN = 'remoteStorageToken';
     var RS_INFO = 'userStorageInfo';
 
+    function showTimeOutMessageIfNeeded(error) {
+        if (error=='timeout') {
+            window.alert("We got an timeout! Please check your network connection und press reload.");
+        }
+    }
+
     function getPopUpUrl() {
         var hrefWithoutHash = location.href.substring(0,location.href.length-location.hash.length);
         var path = hrefWithoutHash.replace(/\/[^\/]*$/,"");
@@ -18,6 +24,7 @@ var remoteStorageUtils = (function () {
         var redirectUrl = getPopUpUrl();
         popup= window.open(redirectUrl);
         connect(userAddress, function (error,storageInfo) {
+            showTimeOutMessageIfNeeded(error);
             if (storageInfo) {
                 var oauthPage = remoteStorage.createOAuthAddress(storageInfo, categories, redirectUrl);
                 popup.location.replace(oauthPage);
@@ -38,6 +45,7 @@ var remoteStorageUtils = (function () {
         remoteStorage.getStorageInfo(userAddress, function (error, storageInfo) {
             if (error) {
                 alert('Could not load storage info');
+                showTimeOutMessageIfNeeded(error);
                 console.log(error);
             } else {
                 console.log('Storage info received:');
@@ -102,6 +110,7 @@ var remoteStorageUtils = (function () {
             if (error) {
                 //alert('Could not find "' + key + '" in category "' + category + '" on the remoteStorage');
                 console.log(error);
+                showTimeOutMessageIfNeeded(error);
             } else {
                 if (data == undefined) {
                     console.log('There wasn\'t anything for "' + key + '" in category "' + category + '"');
@@ -127,6 +136,9 @@ var remoteStorageUtils = (function () {
                 //alert('Could not store "' + key + '" in "' + category + '" category');
                 console.log('Could not store "' + key + '" in "' + category + '" category');
                 console.log(error);
+                if (error=='timeout') {
+                    window.alert("We got an timeout! Bad luck. Please check your network connection und try to redo your action.");
+                }
             } else {
                 console.log('Stored "' + value + '" for key "' + key + '" in "' + category + '" category');
             }

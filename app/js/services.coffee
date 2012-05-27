@@ -114,13 +114,16 @@ class SettingsDAO
         callback(self.settings)
     else
       rs.getItem(RS_CATEGORY, self.key, (error, data)->
-          settings = JSON.parse(data || '{}')
-          self.settings = settings
-          if (!settings.secret)
-            settings.secret = randomString(20)
-            self.saveSettings(callback)
+          if error=='timeout'
+            window.alert("We got an timeout! Please check your network connection und press reload.")
           else
-            callback(settings)
+            settings = JSON.parse(data || '{}')
+            self.settings = settings
+            if (!settings.secret)
+              settings.secret = randomString(20)
+              self.saveSettings(callback)
+            else
+              callback(settings)
       )
 
   getSecret: (callback) ->

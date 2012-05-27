@@ -202,13 +202,17 @@
       } else {
         return rs.getItem(RS_CATEGORY, self.key, function(error, data) {
           var settings;
-          settings = JSON.parse(data || '{}');
-          self.settings = settings;
-          if (!settings.secret) {
-            settings.secret = randomString(20);
-            return self.saveSettings(callback);
+          if (error === 'timeout') {
+            return window.alert("We got an timeout! Please check your network connection und press reload.");
           } else {
-            return callback(settings);
+            settings = JSON.parse(data || '{}');
+            self.settings = settings;
+            if (!settings.secret) {
+              settings.secret = randomString(20);
+              return self.saveSettings(callback);
+            } else {
+              return callback(settings);
+            }
           }
         });
       }
