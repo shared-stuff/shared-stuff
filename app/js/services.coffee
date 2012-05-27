@@ -115,7 +115,7 @@ class SettingsDAO
     else
       rs.getItem(RS_CATEGORY, self.key, (error, data)->
           if error=='timeout'
-            window.alert("We got an timeout! Please check your network connection und press reload.")
+            # TODO: bad luck
           else
             settings = JSON.parse(data || '{}')
             self.settings = settings

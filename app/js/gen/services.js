@@ -202,9 +202,7 @@
       } else {
         return rs.getItem(RS_CATEGORY, self.key, function(error, data) {
           var settings;
-          if (error === 'timeout') {
-            return window.alert("We got an timeout! Please check your network connection und press reload.");
-          } else {
+          if (error === 'timeout') {} else {
             settings = JSON.parse(data || '{}');
             self.settings = settings;
             if (!settings.secret) {

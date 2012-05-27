@@ -9,7 +9,15 @@ var remoteStorageUtils = (function () {
 
     function showTimeOutMessageIfNeeded(error) {
         if (error=='timeout') {
-            window.alert("We got an timeout! Please check your network connection und press reload.");
+            window.alert("We got an timeout! Check your network connection and try gain.");
+        }
+    }
+
+    function showTimeOutRedoConfirmationIfNeeded(error,redo,redoArgs) {
+        if (error=='timeout') {
+            if (window.confirm("We got an timeout! Shoud I try again?")){
+                redo.apply(this,redoArgs);
+            }
         }
     }
 
@@ -20,17 +28,18 @@ var remoteStorageUtils = (function () {
     }
 
     function connectAndAuthorize(userAddress,categories, onAuthorizedArg) {
+        var orgArguments = arguments;
         onAuthorized = onAuthorizedArg;
         var redirectUrl = getPopUpUrl();
         popup= window.open(redirectUrl);
         connect(userAddress, function (error,storageInfo) {
-            showTimeOutMessageIfNeeded(error);
             if (storageInfo) {
                 var oauthPage = remoteStorage.createOAuthAddress(storageInfo, categories, redirectUrl);
                 popup.location.replace(oauthPage);
             } else {
                 popup.close();
             }
+            showTimeOutRedoConfirmationIfNeeded(error,connectAndAuthorize,orgArguments)
         });
     }
 
@@ -45,7 +54,6 @@ var remoteStorageUtils = (function () {
         remoteStorage.getStorageInfo(userAddress, function (error, storageInfo) {
             if (error) {
                 alert('Could not load storage info');
-                showTimeOutMessageIfNeeded(error);
                 console.log(error);
             } else {
                 console.log('Storage info received:');
@@ -94,6 +102,7 @@ var remoteStorageUtils = (function () {
     // category is any other than "public", we also have to provide the OAuth
     // token.
     function getItem(category, key, callback) {
+        var orgArguments = arguments;
         var storageInfo = JSON.parse(localStorage.getItem(RS_INFO));
         var client;
 
@@ -110,7 +119,7 @@ var remoteStorageUtils = (function () {
             if (error) {
                 //alert('Could not find "' + key + '" in category "' + category + '" on the remoteStorage');
                 console.log(error);
-                showTimeOutMessageIfNeeded(error);
+                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments);
             } else {
                 if (data == undefined) {
                     console.log('There wasn\'t anything for "' + key + '" in category "' + category + '"');
@@ -127,6 +136,7 @@ var remoteStorageUtils = (function () {
     // value and a callback. The callback will be called with an error code,
     // which is `null` on success.
     function setItem(category, key, value, callback) {
+        var orgArguments = arguments;
         var storageInfo = JSON.parse(localStorage.getItem(RS_INFO));
         var token = localStorage.getItem(RS_TOKEN);
         var client = remoteStorage.createClient(storageInfo, category, token);
@@ -136,9 +146,7 @@ var remoteStorageUtils = (function () {
                 //alert('Could not store "' + key + '" in "' + category + '" category');
                 console.log('Could not store "' + key + '" in "' + category + '" category');
                 console.log(error);
-                if (error=='timeout') {
-                    window.alert("We got an timeout! Bad luck. Please check your network connection und try to redo your action.");
-                }
+                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments);
             } else {
                 console.log('Stored "' + value + '" for key "' + key + '" in "' + category + '" category');
             }
