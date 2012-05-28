@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, isBlank, log, publicRemoteStorageService, randomString, rs, settingsDAO,
+  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, getItemsFromContainer, isBlank, log, publicRemoteStorageService, randomString, rs, settingsDAO,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -123,12 +123,16 @@
       var publicStuff;
       MyStuffDAO.__super__.save.call(this, allItems, callback);
       this.settingsDAO.getSecret(function(secret) {
-        return rs.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify(allItems), doNothing);
+        return rs.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify({
+          items: allItems
+        }), doNothing);
       });
       publicStuff = _.filter(allItems, function(item) {
         return item.visibility === 'public';
       });
-      return rs.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify(publicStuff), doNothing);
+      return rs.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify({
+        items: publicStuff
+      }), doNothing);
     };
 
     return MyStuffDAO;
@@ -321,6 +325,10 @@
 
   })();
 
+  getItemsFromContainer = function(itemContainer, wrapItem) {
+    return _.map((itemContainer != null ? itemContainer.items : void 0) || [], wrapItem);
+  };
+
   FriendsStuffDAO = (function() {
 
     function FriendsStuffDAO(friendDAO, publicRemoteStorageDAO) {
@@ -330,7 +338,13 @@
     }
 
     FriendsStuffDAO.prototype.listStuffByFriend = function(friend, callback) {
-      return this.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], callback);
+      return this.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer) {
+        return callback(getItemsFromContainer(itemContainer, function(item) {
+          item = new Stuff(item);
+          item.owner = friend;
+          return item;
+        }));
+      });
     };
 
     FriendsStuffDAO.prototype.validateFriend = function(friend, callback) {
@@ -365,31 +379,27 @@
       var self;
       self = this;
       return this.friendDAO.list(function(friends) {
-        var bindUpdateToFriend, friend, loadedCounter, _i, _len, _results;
+        var friend, loadedCounter, _i, _len, _results;
         loadedCounter = 0;
         if (friends.length === 0) callback(self.friendsStuffList, 'NO_FRIENDS');
         _results = [];
         for (_i = 0, _len = friends.length; _i < _len; _i++) {
           friend = friends[_i];
-          bindUpdateToFriend = function(friend) {
-            return function(friendStuff) {
-              self._updateWithLoadedItems(friend, friendStuff);
-              loadedCounter++;
-              return callback(self.friendsStuffList, loadedCounter === friends.length ? 'LOADED' : 'LOADING');
-            };
-          };
-          _results.push(self.listStuffByFriend(friend, bindUpdateToFriend(friend)));
+          _results.push(self.listStuffByFriend(friend, function(friendStuff) {
+            self._updateWithLoadedItems(friendStuff);
+            loadedCounter++;
+            return callback(self.friendsStuffList, loadedCounter === friends.length ? 'LOADED' : 'LOADING');
+          }));
         }
         return _results;
       });
     };
 
-    FriendsStuffDAO.prototype._updateWithLoadedItems = function(friend, friendStuff) {
+    FriendsStuffDAO.prototype._updateWithLoadedItems = function(friendStuff) {
       var existingItem, stuff, _i, _len, _results;
       _results = [];
       for (_i = 0, _len = friendStuff.length; _i < _len; _i++) {
         stuff = friendStuff[_i];
-        stuff.owner = friend;
         existingItem = _.find(this.friendsStuffList, function(it) {
           return it.id === stuff.id;
         });

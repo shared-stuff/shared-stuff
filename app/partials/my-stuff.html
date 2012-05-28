@@ -17,6 +17,7 @@
         <span stuff-image src="{{stuff.image}}"/>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
         <span ng-show="stuff.visibility == 'public'" class="owner visibility">Public</span>
+        {{stuff.categories}}
         <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a>
     </li>
 </ul>

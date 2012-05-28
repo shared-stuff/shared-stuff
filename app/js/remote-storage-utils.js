@@ -13,10 +13,12 @@ var remoteStorageUtils = (function () {
         }
     }
 
-    function showTimeOutRedoConfirmationIfNeeded(error,redo,redoArgs) {
+    function showTimeOutRedoConfirmationIfNeeded(error,redo,redoArgs,noRedo) {
         if (error=='timeout') {
             if (window.confirm("We got an timeout! Shoud I try again?")){
                 redo.apply(this,redoArgs);
+            } else if(noRedo) {
+                noRedo();
             }
         }
     }
@@ -119,16 +121,18 @@ var remoteStorageUtils = (function () {
             if (error) {
                 //alert('Could not find "' + key + '" in category "' + category + '" on the remoteStorage');
                 console.log(error);
-                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments);
+                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments, function() {
+                    callback(error, data);
+                });
             } else {
                 if (data == undefined) {
                     console.log('There wasn\'t anything for "' + key + '" in category "' + category + '"');
                 } else {
                     console.log('We received this for key "' + key + '" in category "' + category + '": ' + data);
                 }
+                callback(undefined, data);
             }
 
-            callback(error, data);
         });
     }
 
@@ -146,14 +150,14 @@ var remoteStorageUtils = (function () {
                 //alert('Could not store "' + key + '" in "' + category + '" category');
                 console.log('Could not store "' + key + '" in "' + category + '" category');
                 console.log(error);
-                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments);
+                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments,function(){
+                    callback && callback(error);
+                });
             } else {
                 console.log('Stored "' + value + '" for key "' + key + '" in "' + category + '" category');
+                callback && callback();
             }
 
-            if (callback) {
-                callback(error);
-            }
         });
     }
 

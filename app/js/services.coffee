@@ -69,9 +69,9 @@ class MyStuffDAO extends RemoteStorageDAO
   save: (allItems, callback) ->
     super(allItems, callback)
     @settingsDAO.getSecret (secret)->
-      rs.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify(allItems), doNothing)
+      rs.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify({items:allItems}), doNothing)
     publicStuff = _.filter(allItems, (item)-> item.visibility=='public')
-    rs.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify(publicStuff), doNothing)
+    rs.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify({items:publicStuff}), doNothing)
 
 
 class LocalStorageDAO
@@ -197,12 +197,20 @@ class PublicRemoteStorageService
         callback(defaultValue)
     )
 
+getItemsFromContainer = (itemContainer,wrapItem) -> _.map(itemContainer?.items || [],wrapItem)
+
 class FriendsStuffDAO
   constructor: (@friendDAO,@publicRemoteStorageDAO) ->
     @friendsStuffList = []
 
   listStuffByFriend: (friend, callback) ->
-    @publicRemoteStorageDAO.get(friend.userAddress,getFriendStuffKey(friend),[], callback)
+    @publicRemoteStorageDAO.get(friend.userAddress,getFriendStuffKey(friend),[], (itemContainer)->
+      callback(getItemsFromContainer(itemContainer, (item)->
+        item = new Stuff(item)
+        item.owner = friend
+        return item
+      ))
+    )
 
   # returns a list of invalid attributes
   validateFriend: (friend, callback) ->
@@ -234,16 +242,14 @@ class FriendsStuffDAO
       if friends.length==0
         callback(self.friendsStuffList,'NO_FRIENDS')
       for friend in friends
-        bindUpdateToFriend = (friend)->
-          return (friendStuff) ->
-            self._updateWithLoadedItems(friend, friendStuff)
+        self.listStuffByFriend(friend, (friendStuff) ->
+            self._updateWithLoadedItems(friendStuff)
             loadedCounter++
             callback(self.friendsStuffList,if loadedCounter==friends.length then 'LOADED' else 'LOADING')
-        self.listStuffByFriend(friend, bindUpdateToFriend(friend))
+        )
 
-  _updateWithLoadedItems: (friend, friendStuff)->
+  _updateWithLoadedItems: (friendStuff)->
     for stuff in friendStuff
-      stuff.owner = friend
       existingItem = _.find(@friendsStuffList, (it) -> it.id == stuff.id)
       if existingItem
         @friendsStuffList[_.indexOf(@friendsStuffList, existingItem)] = stuff

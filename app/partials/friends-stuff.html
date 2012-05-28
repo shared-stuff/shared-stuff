@@ -39,7 +39,7 @@
         <span stuff-image src="{{stuff.image}}"/>
         <p class="description" ng-bind-html="stuff.description | linky"></p>
 
-        <div class="owner"><a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})
+        <div class="owner">{{stuff.categories}} <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})
             <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a></div>
     </li>
 </ul>

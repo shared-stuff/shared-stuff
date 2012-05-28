@@ -5,6 +5,7 @@ class Stuff
     @title = props?.title || ''
     @description = props?.description || ''
     @visibility = props?.visibility || "friends"
+    @categories = props?.categories || ''
     @link = props?.link || ''
     @image = props?.image || ''
     time = new Date().getTime()
