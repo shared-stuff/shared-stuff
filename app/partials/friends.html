@@ -1,6 +1,6 @@
 <div class="rightHeaderButtons">
     <button id="showAddFriendFormButton" class="btn" ng-click="showAddForm()" ng-hide="!isAddFriendFormHidden">Add Friend</button>
-    <button id="inviteFriend" class="btn" ng-click="inviteFriend()" ng-hide="!isInviteFriendFormHidden">Invite</button>
+    <button id="inviteFriend" class="btn" ng-click="inviteFriend()" ng-show="isInviteFriendButtonShown">Invite</button>
 </div>
 <h2>My Friends</h2>
 
@@ -10,17 +10,6 @@
     <h3>Add Friend</h3>
     <div ng-include src="'partials/friend-form.html'">Toll</div>
     <button class="btn btn-primary" ng-click="addFriend()">Add Friend</button>
-</div>
-
-<div class="addItemForm itemForm" ng-hide="isInviteFriendFormHidden">
-    <a class="close" ng-click="closeForm()">&times;</a>
-    <h3>Invite Friend</h3>
-    <label for="inviteUrl">To invite a friend and share your stuff with your friend, send this link</label>
-    <input class="urlDisplay" id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus" app-select-on-focus/>
-    <h3>Invite Public</h3>
-    <label for="publicInviteUrl">To invite the public and share your stuff with the public, send this link</label>
-    <input class="urlDisplay" id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl" ng-model-instant app-select-on-focus/>
-    <button class="btn btn-primary" ng-click="closeInviteFriend()" id="closeInviteFriend">Close</button>
 </div>
 
 <div class="alert alert-info" ng-show="status=='LOADED' && friendList.length==0">

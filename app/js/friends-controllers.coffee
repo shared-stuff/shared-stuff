@@ -6,11 +6,10 @@ applyIfNeeded =  utils.applyIfNeeded
 
 
 
-FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)->
+FriendsController = ($scope,friendDAO,friendsStuffDAO,$location,$routeParams)->
   $scope.friendList = []
   $scope.isAddFriendFormHidden = true
-  $scope.isInviteFriendFormHidden = true
-  $scope.inviteUrl = 'Loading...'
+  $scope.isInviteFriendButtonShown = true
 
   friendDAO.list (restoredFriendList)->
     $scope.friendList = restoredFriendList
@@ -23,12 +22,12 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
 
   $scope.showAddForm = ()->
     $scope.isAddFriendFormHidden = false
-    $scope.isInviteFriendFormHidden = true
+    $scope.isInviteFriendButtonShown = false
     focus('name')
 
   $scope.closeForm = ()->
     $scope.isAddFriendFormHidden = true
-    $scope.isInviteFriendFormHidden = true
+    $scope.isInviteFriendButtonShown = true
 
   $scope.friend = new Friend()
 
@@ -38,8 +37,8 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
       if errors.length==0
         $scope.friendList.push(new Friend($scope.friend))
         friendDAO.save($scope.friendList)
-        $scope.friend = new Friend();
-        $scope.isAddFriendFormHidden = true
+        $scope.friend = new Friend()
+        $scope.closeForm()
         $scope.$digest();
         focus('showAddFriendFormButton')
       else
@@ -47,17 +46,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
         showValidationErrors($scope.friend,errors)
     )
   $scope.inviteFriend = ->
-    $scope.isInviteFriendFormHidden = false
-    $scope.isAddFriendFormHidden = true
-    settingsDAO.getSecret (secret) ->
-      userAdress = $scope.session.userAddress
-      $scope.inviteUrl =  buildInviteFriendUrl(userAdress,secret)
-      $scope.publicInviteUrl =  buildPublicInviteUrl(userAdress)
-      $scope.$digest();
-      focusAndSelect('inviteUrl')
-
-  $scope.closeInviteFriend = ->
-    $scope.isInviteFriendFormHidden = true
+    $location.path('/share-stuff')
 
   focus('showAddFriendFormButton')
 
@@ -72,7 +61,7 @@ buildPublicInviteUrl = (userAddress,secret) ->
   return part1+'#'+hash
 
 
-FriendsController.$inject = ['$scope','friendDAO','friendsStuffDAO','settingsDAO','$routeParams']
+FriendsController.$inject = ['$scope','friendDAO','friendsStuffDAO','$location','$routeParams']
 
 
 FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->
@@ -161,15 +150,21 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
 
 FriendViewController.$inject = ['$scope','friendDAO','friendsStuffDAO','profileDAO','$routeParams','$location']
 
-ShareStuffController = ($scope,settingsDAO)->
-    settingsDAO.getSecret (secret) ->
-      userAdress = $scope.session.userAddress
-      $scope.inviteUrl =  buildInviteFriendUrl(userAdress,secret)
-      $scope.publicInviteUrl =  buildPublicInviteUrl(userAdress)
-      $scope.$digest();
-      focusAndSelect('inviteUrl')
+ShareStuffController = ($scope,settingsDAO,stuffDAO)->
+  stuffDAO.list (restoredStuffList) ->
+    if restoredStuffList.length > 0
+      settingsDAO.getSecret (secret) ->
+        userAdress = $scope.session.userAddress
+        $scope.inviteUrl =  buildInviteFriendUrl(userAdress,secret)
+        $scope.publicInviteUrl =  buildPublicInviteUrl(userAdress)
+        $scope.$digest()
+        focusAndSelect('inviteUrl')
+    else
+      $scope.showNoStuffWarning = true
+      $scope.$digest()
 
-ShareStuffController.$inject = ['$scope','settingsDAO']
+
+ShareStuffController.$inject = ['$scope','settingsDAO','stuffDAO']
 
 #export
 this.FriendsController = FriendsController

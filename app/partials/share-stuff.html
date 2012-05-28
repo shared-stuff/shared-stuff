@@ -1,10 +1,23 @@
 <h2>Share your Stuff</h2>
 
 
-<h3>Invite Friend</h3>
-<label for="inviteUrl">To invite a friend and share your stuff with your friend, send this link</label>
-<input class="urlDisplay" id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant autofocus="autofocus" app-select-on-focus placeholder="Loading..." />
+<div ng-switch on="showNoStuffWarning">
 
-<h3>Invite Public</h3>
-<label for="publicInviteUrl">To invite the public and share your stuff with the public, send this link</label>
-<input class="urlDisplay" id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl" ng-model-instant app-select-on-focus placeholder="Loading..."/>
+    <div ng-switch-when="true" class="alert alert-error" ng-show="showNoStuffWarning" style="display: none">
+        It seems that you have no stuff. Please <a href="#mystuff">add some stuff</a> before you invite a friend.
+    </div>
+
+    <div ng-switch-default>
+        <h3>Invite Friend</h3>
+        <label for="inviteUrl">To invite a friend and share your stuff with your friend, send this link</label>
+        <input class="urlDisplay" id="inviteUrl" name="inviteUrl" ng-model="inviteUrl" ng-model-instant
+               autofocus="autofocus" app-select-on-focus placeholder="Loading..."/>
+
+        <h3>Invite Public</h3>
+        <label for="publicInviteUrl">To invite the public and share your stuff with the public, send this link</label>
+        <input class="urlDisplay" id="publicInviteUrl" name="publicInviteUrl" ng-model="publicInviteUrl"
+               ng-model-instant app-select-on-focus placeholder="Loading..."/>
+    </div>
+
+</div>
+

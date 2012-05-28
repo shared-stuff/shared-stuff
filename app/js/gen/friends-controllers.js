@@ -11,11 +11,10 @@
 
   applyIfNeeded = utils.applyIfNeeded;
 
-  FriendsController = function($scope, friendDAO, friendsStuffDAO, settingsDAO, $routeParams) {
+  FriendsController = function($scope, friendDAO, friendsStuffDAO, $location, $routeParams) {
     $scope.friendList = [];
     $scope.isAddFriendFormHidden = true;
-    $scope.isInviteFriendFormHidden = true;
-    $scope.inviteUrl = 'Loading...';
+    $scope.isInviteFriendButtonShown = true;
     friendDAO.list(function(restoredFriendList) {
       $scope.friendList = restoredFriendList;
       $scope.isAddFriendFormHidden = $scope.friendList.length > 0;
@@ -32,12 +31,12 @@
     });
     $scope.showAddForm = function() {
       $scope.isAddFriendFormHidden = false;
-      $scope.isInviteFriendFormHidden = true;
+      $scope.isInviteFriendButtonShown = false;
       return focus('name');
     };
     $scope.closeForm = function() {
       $scope.isAddFriendFormHidden = true;
-      return $scope.isInviteFriendFormHidden = true;
+      return $scope.isInviteFriendButtonShown = true;
     };
     $scope.friend = new Friend();
     $scope.addFriend = function() {
@@ -47,7 +46,7 @@
           $scope.friendList.push(new Friend($scope.friend));
           friendDAO.save($scope.friendList);
           $scope.friend = new Friend();
-          $scope.isAddFriendFormHidden = true;
+          $scope.closeForm();
           $scope.$digest();
           return focus('showAddFriendFormButton');
         } else {
@@ -57,19 +56,7 @@
       });
     };
     $scope.inviteFriend = function() {
-      $scope.isInviteFriendFormHidden = false;
-      $scope.isAddFriendFormHidden = true;
-      return settingsDAO.getSecret(function(secret) {
-        var userAdress;
-        userAdress = $scope.session.userAddress;
-        $scope.inviteUrl = buildInviteFriendUrl(userAdress, secret);
-        $scope.publicInviteUrl = buildPublicInviteUrl(userAdress);
-        $scope.$digest();
-        return focusAndSelect('inviteUrl');
-      });
-    };
-    $scope.closeInviteFriend = function() {
-      return $scope.isInviteFriendFormHidden = true;
+      return $location.path('/share-stuff');
     };
     return focus('showAddFriendFormButton');
   };
@@ -86,7 +73,7 @@
     return part1 + '#' + hash;
   };
 
-  FriendsController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', 'settingsDAO', '$routeParams'];
+  FriendsController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', '$location', '$routeParams'];
 
   FriendEditController = function($scope, friendDAO, friendsStuffDAO, profileDAO, $routeParams, $location) {
     var loadFriend, redirectToList;
@@ -182,18 +169,25 @@
 
   FriendViewController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', 'profileDAO', '$routeParams', '$location'];
 
-  ShareStuffController = function($scope, settingsDAO) {
-    return settingsDAO.getSecret(function(secret) {
-      var userAdress;
-      userAdress = $scope.session.userAddress;
-      $scope.inviteUrl = buildInviteFriendUrl(userAdress, secret);
-      $scope.publicInviteUrl = buildPublicInviteUrl(userAdress);
-      $scope.$digest();
-      return focusAndSelect('inviteUrl');
+  ShareStuffController = function($scope, settingsDAO, stuffDAO) {
+    return stuffDAO.list(function(restoredStuffList) {
+      if (restoredStuffList.length > 0) {
+        return settingsDAO.getSecret(function(secret) {
+          var userAdress;
+          userAdress = $scope.session.userAddress;
+          $scope.inviteUrl = buildInviteFriendUrl(userAdress, secret);
+          $scope.publicInviteUrl = buildPublicInviteUrl(userAdress);
+          $scope.$digest();
+          return focusAndSelect('inviteUrl');
+        });
+      } else {
+        $scope.showNoStuffWarning = true;
+        return $scope.$digest();
+      }
     });
   };
 
-  ShareStuffController.$inject = ['$scope', 'settingsDAO'];
+  ShareStuffController.$inject = ['$scope', 'settingsDAO', 'stuffDAO'];
 
   this.FriendsController = FriendsController;
 
