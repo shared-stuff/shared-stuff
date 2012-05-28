@@ -6,7 +6,7 @@ needsUserLoggedIn = (path)->
   !_.any(['invitation','login'],(publicPath) -> path.indexOf(publicPath)==1)
 
 
-AppController = ($scope,$location,settingsDAO)->
+AppController = ($scope,$location)->
   $scope.isAppLoaded = false;
   $scope.session = {
     userAddress: localStorage.getItem('userAddress')
@@ -20,7 +20,8 @@ AppController = ($scope,$location,settingsDAO)->
       userAddress: null
       isLoggedIn: false
     }
-    $location.path('/login')
+    window.location.href="logout.html";
+    #$location.path('/login')
 
   $scope.setLoggenOn = ->
     $scope.session = {
@@ -57,7 +58,7 @@ AppController = ($scope,$location,settingsDAO)->
 
 
 
-AppController.$inject = ['$scope','$location','settingsDAO']
+AppController.$inject = ['$scope','$location']
 
 #export
 this.AppController = AppController

@@ -16,6 +16,7 @@ cp    $LIB/bootstrap/img/* $TARGET/img
 cp -r $SOURCE/partials $TARGET
 $BASE_DIR/replacedev.js $SOURCE/index.html >$TARGET/index.html
 cp  $SOURCE/remote-storage-login-popup.html $TARGET
+cp  $SOURCE/logout.html $TARGET
 cp -r $SOURCE/js  $TARGET
 cp -r $LIB  $TARGET
 

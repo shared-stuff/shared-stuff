@@ -1,7 +1,7 @@
 log = utils.log
 rs = remoteStorageUtils
 
-LoginController = ($scope,$location,settingsDAO)->
+LoginController = ($scope,$location)->
   log("Login")
   #$scope.session.isLoggedIn = false
   #$scope.userAddress = ""
@@ -25,7 +25,7 @@ LoginController = ($scope,$location,settingsDAO)->
       log(e)
 
 
-LoginController.$inject = ['$scope','$location','settingsDAO']
+LoginController.$inject = ['$scope','$location']
 
 #export
 this.LoginController = LoginController

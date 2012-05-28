@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, friendDAO, getFriendStuffKey, getItemsFromContainer, isBlank, log, publicRemoteStorageService, randomString, rs, settingsDAO,
+  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, log, randomString, rs,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -420,12 +420,14 @@
     return PUBLIC_PREFIX + (!isBlank(friend.secret) ? friend.secret : "public");
   };
 
-  friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList');
+  initServices = function() {
+    var friendDAO, publicRemoteStorageService, settingsDAO;
+    friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList');
+    settingsDAO = new SettingsDAO();
+    publicRemoteStorageService = new PublicRemoteStorageService();
+    return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService));
+  };
 
-  settingsDAO = new SettingsDAO();
-
-  publicRemoteStorageService = new PublicRemoteStorageService();
-
-  angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService));
+  initServices();
 
 }).call(this);

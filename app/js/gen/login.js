@@ -5,7 +5,7 @@
 
   rs = remoteStorageUtils;
 
-  LoginController = function($scope, $location, settingsDAO) {
+  LoginController = function($scope, $location) {
     log("Login");
     return $scope.login = function() {
       var userAddress;
@@ -32,7 +32,7 @@
     };
   };
 
-  LoginController.$inject = ['$scope', '$location', 'settingsDAO'];
+  LoginController.$inject = ['$scope', '$location'];
 
   this.LoginController = LoginController;
 

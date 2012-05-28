@@ -260,14 +260,18 @@ getFriendStuffKey = (friend) -> PUBLIC_PREFIX + (if !isBlank(friend.secret) then
 
 
 
-friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList')
-settingsDAO = new SettingsDAO()
-publicRemoteStorageService = new PublicRemoteStorageService()
 
-angular.module('myApp.services', []).
-value('version', '0.1').
-value('settingsDAO', settingsDAO).
-value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
-value('friendDAO', friendDAO).
-value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService)).
-value('profileDAO',new ProfileDAO(publicRemoteStorageService))
+initServices = ->
+  friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList')
+  settingsDAO = new SettingsDAO()
+  publicRemoteStorageService = new PublicRemoteStorageService()
+
+  angular.module('myApp.services', []).
+  value('version', '0.1').
+  value('settingsDAO', settingsDAO).
+  value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
+  value('friendDAO', friendDAO).
+  value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService)).
+  value('profileDAO',new ProfileDAO(publicRemoteStorageService))
+
+initServices()

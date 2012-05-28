@@ -13,7 +13,7 @@
     });
   };
 
-  AppController = function($scope, $location, settingsDAO) {
+  AppController = function($scope, $location) {
     var onRouteChange;
     $scope.isAppLoaded = false;
     $scope.session = {
@@ -27,7 +27,7 @@
         userAddress: null,
         isLoggedIn: false
       };
-      return $location.path('/login');
+      return window.location.href = "logout.html";
     };
     $scope.setLoggenOn = function() {
       $scope.session = {
@@ -70,7 +70,7 @@
     }
   };
 
-  AppController.$inject = ['$scope', '$location', 'settingsDAO'];
+  AppController.$inject = ['$scope', '$location'];
 
   this.AppController = AppController;
 
