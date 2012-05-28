@@ -26,6 +26,9 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
     $scope.isInviteFriendFormHidden = true
     focus('name')
 
+  $scope.closeForm = ()->
+    $scope.isAddFriendFormHidden = true
+    $scope.isInviteFriendFormHidden = true
 
   $scope.friend = new Friend()
 

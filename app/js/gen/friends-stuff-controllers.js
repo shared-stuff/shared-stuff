@@ -9,7 +9,7 @@
     var filterStuffList, refreshTimeout, startRefresh;
     $scope.stuffList = [];
     $scope.filteredStuffList = [];
-    $scope.sortAttribute = '-modified';
+    $scope.sortAttribute = sessionStorage.getItem('friends-stuff-sortAttribute') || '-modified';
     $scope.sortAttributeNames = {
       '-modified': 'Newest',
       'title': 'Title',
@@ -34,7 +34,7 @@
       return startRefresh();
     });
     $scope.sortBy = function(sortAttribute) {
-      log(sortAttribute);
+      sessionStorage.setItem('friends-stuff-sortAttribute', sortAttribute);
       return $scope.sortAttribute = sortAttribute;
     };
     $scope.$watch('searchQuery', filterStuffList);

@@ -35,6 +35,10 @@
       $scope.isInviteFriendFormHidden = true;
       return focus('name');
     };
+    $scope.closeForm = function() {
+      $scope.isAddFriendFormHidden = true;
+      return $scope.isInviteFriendFormHidden = true;
+    };
     $scope.friend = new Friend();
     $scope.addFriend = function() {
       $scope.friend.sanitize();

@@ -1,7 +1,17 @@
-<button style="float:right;" id="showAddStuffFormButton" class="btn rightHeaderButtons" ng-click="showAddForm()" ng-hide="!isAddStuffFormHidden">Add Stuff</button>
+<div class="btn-group rightHeaderButtons">
+    <button id="showAddStuffFormButton" class="btn rightHeaderButtons" ng-click="showAddForm()" ng-hide="!isAddStuffFormHidden">Add Stuff</button>
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+        Sort By {{sortAttributeNames[sortAttribute]}} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a ng-click="sortBy('-modified')">Newest</a></li>
+        <li><a ng-click="sortBy('title')">Title</a></li>
+    </ul>
+</div>
 <h2>My Stuff</h2>
 
 <div class="addItemForm" ng-hide="isAddStuffFormHidden">
+    <a class="close" ng-click="closeForm()">&times;</a>
     <h3>Add Stuff</h3>
     <div ng-include src="'partials/my-stuff-form.html'">Toll</div>
     <button class="btn btn-primary" ng-click="addStuff()">Add Stuff</button>
@@ -12,7 +22,7 @@
 </div>
 
 <ul class="unstyled stuffList">
-    <li ng-repeat="stuff in stuffList | orderBy:'title'">
+    <li ng-repeat="stuff in stuffList | orderBy:sortAttribute ">
         <h3><a href="#/mystuff/{{stuff.id}}">{{stuff.title || "Untitled"}}</a></h3>
         <span stuff-image src="{{stuff.image}}"/>
         <p class="description" ng-bind-html="stuff.description | linky"></p>

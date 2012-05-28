@@ -245,3 +245,7 @@ h2 {
 .profileTable td{
     padding-right: 0.5em;
 }
+
+.profileTable label {
+    margin-bottom: 0;
+}

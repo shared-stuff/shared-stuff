@@ -18,6 +18,12 @@
     $scope.stuffList = [];
     $scope.isAddStuffFormHidden = true;
     $scope.circles = circles;
+    $scope.sortAttribute = sessionStorage.getItem('my-stuff-sortAttribute') || '-modified';
+    $scope.sortAttributeNames = {
+      '-modified': 'Newest',
+      'title': 'Title',
+      'owner.name': 'Friend'
+    };
     stuffDAO.list(function(restoredStuffList) {
       $scope.stuffList = restoredStuffList;
       $scope.isAddStuffFormHidden = $scope.stuffList.length > 0;
@@ -28,12 +34,24 @@
       $scope.isAddStuffFormHidden = false;
       return focus('title');
     };
-    $scope.stuff = new Stuff();
+    $scope.closeForm = function() {
+      return $scope.isAddStuffFormHidden = true;
+    };
+    $scope.sortBy = function(sortAttribute) {
+      sessionStorage.setItem('my-stuff-sortAttribute', sortAttribute);
+      return $scope.sortAttribute = sortAttribute;
+    };
+    $scope.stuff = new Stuff({
+      visibility: sessionStorage.getItem('new-stuff-visibility') || null
+    });
     $scope.addStuff = function() {
       if (isValid($scope.stuff)) {
+        sessionStorage.setItem('new-stuff-visibility', $scope.stuff.visibility);
         $scope.stuffList.push(new Stuff($scope.stuff));
         stuffDAO.save($scope.stuffList, function() {});
-        $scope.stuff = new Stuff();
+        $scope.stuff = new Stuff({
+          visibility: $scope.stuff.visibility
+        });
         $scope.isAddStuffFormHidden = true;
         return focus('showAddStuffFormButton');
       } else {

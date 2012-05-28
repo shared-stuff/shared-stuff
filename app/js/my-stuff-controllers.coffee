@@ -13,6 +13,8 @@ MyStuffController = ($scope, stuffDAO)->
   $scope.stuffList = []
   $scope.isAddStuffFormHidden = true
   $scope.circles = circles
+  $scope.sortAttribute = sessionStorage.getItem('my-stuff-sortAttribute') || '-modified'
+  $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
 
   stuffDAO.list (restoredStuffList)->
     $scope.stuffList = restoredStuffList
@@ -24,13 +26,21 @@ MyStuffController = ($scope, stuffDAO)->
     $scope.isAddStuffFormHidden = false
     focus('title')
 
-  $scope.stuff = new Stuff()
+  $scope.closeForm = ()->
+    $scope.isAddStuffFormHidden = true
+
+  $scope.sortBy = (sortAttribute) ->
+    sessionStorage.setItem('my-stuff-sortAttribute',sortAttribute)
+    $scope.sortAttribute = sortAttribute
+
+  $scope.stuff = new Stuff({visibility:sessionStorage.getItem('new-stuff-visibility') || null})
 
   $scope.addStuff = ()->
     if isValid($scope.stuff)
+      sessionStorage.setItem('new-stuff-visibility',$scope.stuff.visibility)
       $scope.stuffList.push(new Stuff($scope.stuff))
       stuffDAO.save($scope.stuffList, ->)
-      $scope.stuff = new Stuff()
+      $scope.stuff = new Stuff({visibility:$scope.stuff.visibility})
       $scope.isAddStuffFormHidden = true
       focus('showAddStuffFormButton')
     else

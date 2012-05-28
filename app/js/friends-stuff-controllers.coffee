@@ -4,7 +4,7 @@ focus = utils.focus
 FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
   $scope.stuffList = []
   $scope.filteredStuffList = []
-  $scope.sortAttribute = '-modified'
+  $scope.sortAttribute = sessionStorage.getItem('friends-stuff-sortAttribute') || '-modified'
   $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
   $scope.status = "LOADING"
   refreshTimeout = undefined
@@ -28,7 +28,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
       startRefresh()
 
   $scope.sortBy = (sortAttribute) ->
-    log(sortAttribute)
+    sessionStorage.setItem('friends-stuff-sortAttribute',sortAttribute)
     $scope.sortAttribute = sortAttribute
 
   $scope.$watch('searchQuery', filterStuffList)
