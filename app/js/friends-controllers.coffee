@@ -44,7 +44,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,settingsDAO,$routeParams)-
         focus('showAddFriendFormButton')
       else
         $scope.showValidationErrors=true
-        window.alert(errors.join(',')+" seems invalid")
+        showValidationErrors($scope.friend,errors)
     )
   $scope.inviteFriend = ->
     $scope.isInviteFriendFormHidden = false
@@ -112,7 +112,7 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
           loadFriend()
         )
       else
-        window.alert(errors.join(',')+" seems invalid")
+        showValidationErrors($scope.friend,errors)
     )
 
 
@@ -124,6 +124,15 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
       friendDAO.deleteItem($scope.friend.id,redirectToList)
 
 FriendEditController.$inject = ['$scope','friendDAO','friendsStuffDAO','profileDAO','$routeParams','$location']
+
+showValidationErrors = (friend,errors)->
+  message = errors.join(',')+" seems invalid."
+  if _.include(errors,'secret')
+    if isBlank(friend.secret)
+      message += " This could mean that your friend has not added public shared stuff yet."
+    else
+      message += " This could mean that your friend has not added secret shared stuff yet."
+  window.alert(message)
 
 
 FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->

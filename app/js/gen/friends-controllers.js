@@ -1,5 +1,5 @@
 (function() {
-  var FriendEditController, FriendViewController, FriendsController, ShareStuffController, applyIfNeeded, buildInviteFriendUrl, buildPublicInviteUrl, focus, focusAndSelect, isBlank, log;
+  var FriendEditController, FriendViewController, FriendsController, ShareStuffController, applyIfNeeded, buildInviteFriendUrl, buildPublicInviteUrl, focus, focusAndSelect, isBlank, log, showValidationErrors;
 
   log = utils.log;
 
@@ -52,7 +52,7 @@
           return focus('showAddFriendFormButton');
         } else {
           $scope.showValidationErrors = true;
-          return window.alert(errors.join(',') + " seems invalid");
+          return showValidationErrors($scope.friend, errors);
         }
       });
     };
@@ -124,7 +124,7 @@
             return loadFriend();
           });
         } else {
-          return window.alert(errors.join(',') + " seems invalid");
+          return showValidationErrors($scope.friend, errors);
         }
       });
     };
@@ -139,6 +139,19 @@
   };
 
   FriendEditController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', 'profileDAO', '$routeParams', '$location'];
+
+  showValidationErrors = function(friend, errors) {
+    var message;
+    message = errors.join(',') + " seems invalid.";
+    if (_.include(errors, 'secret')) {
+      if (isBlank(friend.secret)) {
+        message += " This could mean that your friend has not added public shared stuff yet.";
+      } else {
+        message += " This could mean that your friend has not added secret shared stuff yet.";
+      }
+    }
+    return window.alert(message);
+  };
 
   FriendViewController = function($scope, friendDAO, friendsStuffDAO, profileDAO, $routeParams, $location) {
     var friend;
