@@ -22,7 +22,7 @@
     <li ng-repeat="stuff in stuffList | orderBy:'title'">
         <h3>{{stuff.title}}</h3>
         <span stuff-image src="{{stuff.image}}"/>
-        <p class="description" ng-bind-html="stuff.description | linky"></p>
+        <p class="description" ng-bind-html="stuff.description | urlize"></p>
         <div class="owner">{{stuff.categories}} {{ stuff.modified | date}}  <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a></div>
     </li>
 </ul>
