@@ -34,7 +34,7 @@ java -jar $BASE_DIR/buildtools/closure-compiler.jar $JSG/utils.js $JS/remote-sto
 # $JS/directives.js $JS/filters.js $JSG/account-controllers.js $JS/app.js >$TARGET/js/shared-stuff.min.js
 
 echo "Combine local libs ..."
-cat $LIB/underscore.min.js $LIB/angular/angular.min.js $LIB/angular/angular-sanitize.min.js $LIB/bootstrap/js/bootstrap.min.js $LIB/remoteStorage.js $LIB/urlize.js>$TARGET/js/local-libs.min.js
+cat $LIB/underscore.min.js $LIB/angular/angular.min.js $LIB/angular/angular-sanitize.min.js $LIB/bootstrap/js/bootstrap.min.js $LIB/remoteStorage.js $LIB/urlize.min.js >$TARGET/js/local-libs.min.js
 
 echo "Combine javascripts..."
 cat $LIB/jquery.min.js $LIB/underscore.min.js $LIB/angular/angular.min.js $LIB/angular/angular-sanitize.min.js $LIB/bootstrap/js/bootstrap.min.js $LIB/remoteStorage.js $LIB/urlize.js $TARGET/js/shared-stuff.min.js >$TARGET/js/shared-stuff-with-libs.min.js
