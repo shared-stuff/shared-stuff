@@ -7,19 +7,15 @@ var remoteStorageUtils = (function () {
     var RS_TOKEN = 'remoteStorageToken';
     var RS_INFO = 'userStorageInfo';
 
-    function showTimeOutMessageIfNeeded(error) {
-        if (error=='timeout') {
-            window.alert("We got an timeout! Check your network connection and try gain.");
-        }
-    }
-
-    function showTimeOutRedoConfirmationIfNeeded(error,redo,redoArgs,noRedo) {
+    function showErrorIfNeeded(error,redo,redoArgs,noRedo) {
         if (error=='timeout') {
             if (window.confirm("We got an timeout! Shoud I try again?")){
                 redo.apply(this,redoArgs);
             } else if(noRedo) {
                 noRedo();
             }
+        } else if (error==401) {
+            window.alert("Looks like your session has expired! Please log out and log back in.");
         }
     }
 
@@ -41,7 +37,7 @@ var remoteStorageUtils = (function () {
             } else {
                 popup.close();
             }
-            showTimeOutRedoConfirmationIfNeeded(error,connectAndAuthorize,orgArguments)
+            showErrorIfNeeded(error,connectAndAuthorize,orgArguments)
         });
     }
 
@@ -121,7 +117,7 @@ var remoteStorageUtils = (function () {
             if (error) {
                 //alert('Could not find "' + key + '" in category "' + category + '" on the remoteStorage');
                 console.log(error);
-                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments, function() {
+                showErrorIfNeeded(error,getItem,orgArguments, function() {
                     callback(error, data);
                 });
             } else {
@@ -150,7 +146,7 @@ var remoteStorageUtils = (function () {
                 //alert('Could not store "' + key + '" in "' + category + '" category');
                 console.log('Could not store "' + key + '" in "' + category + '" category');
                 console.log(error);
-                showTimeOutRedoConfirmationIfNeeded(error,getItem,orgArguments,function(){
+                showErrorIfNeeded(error,getItem,orgArguments,function(){
                     callback && callback(error);
                 });
             } else {
