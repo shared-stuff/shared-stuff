@@ -15,8 +15,11 @@ angular.module('myApp', ['ngSanitize','myApp.filters', 'myApp.services', 'myApp.
     $routeProvider.when('/friends/:id', {template: 'partials/friend-edit.html', controller: FriendEditController});
     $routeProvider.when('/addFriend/:name/:userAddress/:secret', {template: 'partials/friends.html', controller: FriendsController});
     $routeProvider.when('/addFriend/:name/:userAddress', {template: 'partials/friends.html', controller: FriendsController});
-    $routeProvider.when('/invitation/:userAddress/:secret', {template: 'partials/friend.html', controller: FriendViewController});
-    $routeProvider.when('/invitation/:userAddress', {template: 'partials/friend.html', controller: FriendViewController});
+
+    $routeProvider.when('/invitation/:user@:host/:secret', {template: 'partials/friend.html', controller: FriendViewController});
+    $routeProvider.when('/:user@:host/:secret', {template: 'partials/friend.html', controller: FriendViewController});
+    $routeProvider.when('/invitation/:user@:host', {template: 'partials/friend.html', controller: FriendViewController});
+    $routeProvider.when('/:user@:host', {template: 'partials/friend.html', controller: FriendViewController});
 
     $routeProvider.when('/friends-stuff', {template: 'partials/friends-stuff.html', controller: FriendsStuffController});
 

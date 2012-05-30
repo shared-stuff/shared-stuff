@@ -57,7 +57,7 @@ buildInviteFriendUrl = (userAddress,secret) ->
 buildPublicInviteUrl = (userAddress,secret) ->
   l = window.location
   part1 = l.protocol+'//'+l.host+ l.pathname
-  hash = '/invitation/'+userAddress
+  hash = userAddress
   return part1+'#'+hash
 
 
@@ -126,7 +126,8 @@ showValidationErrors = (friend,errors)->
 
 FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->
   $scope.stuffList = []
-  friend = new Friend({userAddress:$routeParams.userAddress,secret:$routeParams.secret})
+  userAddress = $routeParams.user+'@'+$routeParams.host
+  friend = new Friend({userAddress:userAddress,secret:$routeParams.secret})
   $scope.friend = friend
   $scope.profile = {}
 
