@@ -69,7 +69,7 @@
     var hash, l, part1;
     l = window.location;
     part1 = l.protocol + '//' + l.host + l.pathname;
-    hash = '/invitation/' + userAddress;
+    hash = userAddress;
     return part1 + '#' + hash;
   };
 
@@ -141,10 +141,11 @@
   };
 
   FriendViewController = function($scope, friendDAO, friendsStuffDAO, profileDAO, $routeParams, $location) {
-    var friend;
+    var friend, userAddress;
     $scope.stuffList = [];
+    userAddress = $routeParams.user + '@' + $routeParams.host;
     friend = new Friend({
-      userAddress: $routeParams.userAddress,
+      userAddress: userAddress,
       secret: $routeParams.secret
     });
     $scope.friend = friend;
