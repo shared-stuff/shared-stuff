@@ -9,7 +9,8 @@
       var time;
       this.title = (props != null ? props.title : void 0) || '';
       this.description = (props != null ? props.description : void 0) || '';
-      this.visibility = (props != null ? props.visibility : void 0) || "friends";
+      this.visibility = (props != null ? props.visibility : void 0) || 'friends';
+      this.sharingTypes = (props != null ? props.visibility : void 0) || ['rent'];
       this.categories = (props != null ? props.categories : void 0) || '';
       this.link = (props != null ? props.link : void 0) || '';
       this.image = (props != null ? props.image : void 0) || '';

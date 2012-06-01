@@ -28,11 +28,11 @@ JS=$SOURCE/js
 JSG=$SOURCE/js/gen
 java -jar $BASE_DIR/buildtools/closure-compiler.jar $JSG/utils.js $JS/remote-storage-utils.js $JSG/models.js $JSG/services.js \
  $JSG/app-controllers.js $JSG/friends-controllers.js $JSG/my-stuff-controllers.js $JSG/friends-stuff-controllers.js  $JS/controllers.js \
- $JS/directives.js $JS/filters.js $JSG/account-controllers.js $JSG/login.js $JS/app.js --js_output_file $TARGET/js/shared-stuff.min.js
+ $JS/gen/directives.js $JS/filters.js $JSG/account-controllers.js $JSG/login.js $JS/app.js --js_output_file $TARGET/js/shared-stuff.min.js
 
 #cat $JSG/utils.js $JS/remote-storage-utils.js $JSG/models.js $JSG/services.js \
 # $JSG/app-controllers.js $JSG/friends-controllers.js $JSG/my-stuff-controllers.js $JSG/friends-stuff-controllers.js  $JS/controllers.js \
-# $JS/directives.js $JS/filters.js $JSG/account-controllers.js $JS/app.js >$TARGET/js/shared-stuff.min.js
+# $JS/gen/directives.js $JS/filters.js $JSG/account-controllers.js $JS/app.js >$TARGET/js/shared-stuff.min.js
 
 echo "Combine local libs ..."
 cat $LIB/underscore.min.js $LIB/angular/angular.min.js $LIB/angular/angular-sanitize.min.js $LIB/bootstrap/js/bootstrap.min.js $LIB/remoteStorage.js $LIB/urlize.min.js >$TARGET/js/local-libs.min.js

@@ -1,10 +1,14 @@
 isBlank = utils.isBlank
 
+
 class Stuff
   constructor: (props)->
     @title = props?.title || ''
     @description = props?.description || ''
-    @visibility = props?.visibility || "friends"
+    # 'friends','public'
+    @visibility = props?.visibility || 'friends'
+    # 'rent','use-together','gift','sell'
+    @sharingTypes = props?.visibility || ['rent']
     @categories = props?.categories || ''
     @link = props?.link || ''
     @image = props?.image || ''
