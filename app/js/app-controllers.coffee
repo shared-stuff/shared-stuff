@@ -2,8 +2,12 @@ log = utils.log
 focus = utils.focus
 applyIfNeeded = utils.applyIfNeeded
 
+
+startsWithUserAddress = (path) ->
+  (/^\/[^@\/]+@.+/).test(path)
+
 needsUserLoggedIn = (path)->
-  !_.any(['invitation','login'],(publicPath) -> path.indexOf(publicPath)==1)
+  !(_.any(['invitation','login'],(publicPath) -> path.indexOf(publicPath)==1) ||startsWithUserAddress(path))
 
 
 AppController = ($scope,$location)->
@@ -57,6 +61,7 @@ AppController = ($scope,$location)->
     $scope.isAppLoaded = true
 
 
+AppController.needsUserLoggedIn = needsUserLoggedIn;
 
 AppController.$inject = ['$scope','$location']
 

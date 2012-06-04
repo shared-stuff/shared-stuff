@@ -1,5 +1,5 @@
 (function() {
-  var AppController, applyIfNeeded, focus, log, needsUserLoggedIn;
+  var AppController, applyIfNeeded, focus, log, needsUserLoggedIn, startsWithUserAddress;
 
   log = utils.log;
 
@@ -7,10 +7,14 @@
 
   applyIfNeeded = utils.applyIfNeeded;
 
+  startsWithUserAddress = function(path) {
+    return /^\/[^@\/]+@.+/.test(path);
+  };
+
   needsUserLoggedIn = function(path) {
-    return !_.any(['invitation', 'login'], function(publicPath) {
+    return !(_.any(['invitation', 'login'], function(publicPath) {
       return path.indexOf(publicPath) === 1;
-    });
+    }) || startsWithUserAddress(path));
   };
 
   AppController = function($scope, $location) {
@@ -69,6 +73,8 @@
       return $scope.isAppLoaded = true;
     }
   };
+
+  AppController.needsUserLoggedIn = needsUserLoggedIn;
 
   AppController.$inject = ['$scope', '$location'];
 
