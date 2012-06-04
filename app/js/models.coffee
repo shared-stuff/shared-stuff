@@ -8,7 +8,7 @@ class Stuff
     # 'friends','public'
     @visibility = props?.visibility || 'friends'
     # 'rent','use-together','gift','sell'
-    @sharingTypes = props?.visibility || ['rent']
+    @sharingTypes = props?.sharingTypes || ['rent']
     @categories = props?.categories || ''
     @link = props?.link || ''
     @image = props?.image || ''
