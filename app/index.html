@@ -2,7 +2,7 @@
 <html ng-controller="AppController">
 <head>
     <meta charset="utf-8">
-    <title>Shared Stuff {{session.userAddress}}</title>
+    <title>Shared Stuff - Share Real Stuff With Friends</title>
 
     <!--<link href='http://fonts.googleapis.com/css?family=Henny+Penny' rel='stylesheet' type='text/css'> -->
 
@@ -12,7 +12,7 @@
     <!-- endif -->
 
     <!-- if !dev
-        <link rel="stylesheet" href="css/app-with-libs.min.css?version=4"/>
+        <link rel="stylesheet" href="css/app-with-libs.min.css?version=5"/>
     endif -->
 </head>
 <body>
@@ -22,9 +22,10 @@
         <div class="navbar-inner">
             <div class="container">
                 <a  class="brand pull-left" href="#">
-                    <img src="img/shared-stuff-logo.png" alt="Shared Stuff" />
+                    <img src="img/shared-stuff-logo.png" alt="Shared Stuff - Save The World, Save Money, Have Fun" />
                 </a>
                 <p class="navbar-text pull-left">Share Real Stuff With Friends</p>
+
 
                 <ul class="nav pull-right">
                     <li ng-hide="!session.isLoggedIn"><a href="" ng-click="logout()">Logout {{session.userAddress}}</a></li>
@@ -99,8 +100,8 @@
 <!-- if !dev
 <script type="text/javascript">
     $LAB.script("http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js")
-            .script("js/local-libs.min.js?version=4").wait()
-            .script("js/shared-stuff.min.js?version=4");
+            .script("js/local-libs.min.js?version=5").wait()
+            .script("js/shared-stuff.min.js?version=5");
 </script>
 endif -->
 
