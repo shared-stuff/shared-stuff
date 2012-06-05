@@ -1,7 +1,7 @@
 
 /**
- * @license AngularJS v1.0.0rc3
- * (c) 2010-2011 AngularJS http://angularjs.org
+ * @license AngularJS v1.0.0rc10
+ * (c) 2010-2012 Google, Inc. http://angularjs.org
  * License: MIT
  *
  * TODO(vojta): wrap whole file into closure during build
@@ -137,13 +137,6 @@ angular.mock.$Browser = function() {
   self.baseHref = function() {
     return this.$$baseHref;
   };
-
-  self.$$scripts = [];
-  self.addJs = function(url, done) {
-    var script = {url: url, done: done};
-    self.$$scripts.push(script);
-    return script;
-  };
 };
 angular.mock.$Browser.prototype = {
 
@@ -248,13 +241,15 @@ angular.mock.$ExceptionHandlerProvider = function() {
         break;
       case 'log':
         var errors = [];
+
         handler = function(e) {
           if (arguments.length == 1) {
             errors.push(e);
           } else {
             errors.push([].slice.call(arguments, 0));
           }
-        }
+        };
+
         handler.errors = errors;
         break;
       default:
@@ -452,7 +447,7 @@ angular.mock.$LogProvider = function() {
     if (angular.isString(timestamp)) {
       var tsStr = timestamp;
 
-      self.origDate = jsonStringToDate(timestamp)
+      self.origDate = jsonStringToDate(timestamp);
 
       timestamp = self.origDate.getTime();
       if (isNaN(timestamp))
@@ -1118,6 +1113,20 @@ function createHttpBackendMock($delegate, $browser) {
 
   /**
    * @ngdoc method
+   * @name angular.module.ngMock.$httpBackend#expectPATCH
+   * @methodOf angular.module.ngMock.$httpBackend
+   * @description
+   * Creates a new request expectation for PATCH requests. For more info see `expect()`.
+   *
+   * @param {string|RegExp} url HTTP url.
+   * @param {(string|RegExp)=} data HTTP request body.
+   * @param {Object=} headers HTTP headers.
+   * @returns {requestHandler} Returns an object with `respond` method that control how a matched
+   *   request is handled.
+   */
+
+  /**
+   * @ngdoc method
    * @name angular.module.ngMock.$httpBackend#expectJSONP
    * @methodOf angular.module.ngMock.$httpBackend
    * @description
@@ -1225,13 +1234,13 @@ function createHttpBackendMock($delegate, $browser) {
      }
     });
 
-    angular.forEach(['PUT', 'POST'], function(method) {
+    angular.forEach(['PUT', 'POST', 'PATCH'], function(method) {
       $httpBackend[prefix + method] = function(url, data, headers) {
         return $httpBackend[prefix](method, url, data, headers)
       }
     });
   }
-};
+}
 
 function MockHttpExpectation(method, url, data, headers) {
 
@@ -1319,6 +1328,25 @@ function MockXhr() {
   this.abort = angular.noop;
 }
 
+
+/**
+ * @ngdoc function
+ * @name angular.module.ngMock.$timeout
+ * @description
+ *
+ * This service is just a simple decorator for {@link angular.module.ng.$timeout $timeout} service
+ * that adds a "flush" method.
+ */
+
+/**
+ * @ngdoc method
+ * @name angular.module.ngMock.$timeout#flush
+ * @methodOf angular.module.ngMock.$timeout
+ * @description
+ *
+ * Flushes the queue of pending tasks.
+ */
+
 /**
  * @ngdoc overview
  * @name angular.module.ngMock
@@ -1332,6 +1360,13 @@ angular.module('ngMock', ['ng']).provider({
   $exceptionHandler: angular.mock.$ExceptionHandlerProvider,
   $log: angular.mock.$LogProvider,
   $httpBackend: angular.mock.$HttpBackendProvider
+}).config(function($provide) {
+  $provide.decorator('$timeout', function($delegate, $browser) {
+    $delegate.flush = function() {
+      $browser.defer.flush();
+    };
+    return $delegate;
+  });
 });
 
 
@@ -1490,6 +1525,20 @@ angular.module('ngMockE2E', ['ng']).config(function($provide) {
 
 /**
  * @ngdoc method
+ * @name angular.module.ngMockE2E.$httpBackend#whenPATCH
+ * @methodOf angular.module.ngMockE2E.$httpBackend
+ * @description
+ * Creates a new backend definition for PATCH requests.  For more info see `when()`.
+ *
+ * @param {string|RegExp} url HTTP url.
+ * @param {(string|RegExp)=} data HTTP request body.
+ * @param {(Object|function(Object))=} headers HTTP headers.
+ * @returns {requestHandler} Returns an object with `respond` and `passThrough` methods that
+ *   control how a matched request is handled.
+ */
+
+/**
+ * @ngdoc method
  * @name angular.module.ngMockE2E.$httpBackend#whenJSONP
  * @methodOf angular.module.ngMockE2E.$httpBackend
  * @description
@@ -1502,6 +1551,20 @@ angular.module('ngMockE2E', ['ng']).config(function($provide) {
 angular.mock.e2e = {};
 angular.mock.e2e.$httpBackendDecorator = ['$delegate', '$browser', createHttpBackendMock];
 
+
+angular.mock.clearDataCache = function() {
+  var key,
+      cache = angular.element.cache;
+
+  for(key in cache) {
+    if (cache.hasOwnProperty(key)) {
+      var handle = cache[key].handle;
+
+      handle && angular.element(handle.elem).unbind();
+      delete cache[key];
+    }
+  }
+};
 
 
 window.jstestdriver && (function(window) {
@@ -1522,6 +1585,13 @@ window.jstestdriver && (function(window) {
 
 
 window.jasmine && (function(window) {
+
+  afterEach(function() {
+    var spec = getCurrentSpec();
+    spec.$injector = null;
+    spec.$modules = null;
+    angular.mock.clearDataCache();
+  });
 
   function getCurrentSpec() {
     return jasmine.getEnv().currentSpec;
@@ -1551,7 +1621,6 @@ window.jasmine && (function(window) {
    */
   window.module = angular.mock.module = function() {
     var moduleFns = Array.prototype.slice.call(arguments, 0);
-    var stack = new Error('Module Declaration Location:').stack;
     return isSpecRunning() ? workFn() : workFn;
     /////////////////////
     function workFn() {
