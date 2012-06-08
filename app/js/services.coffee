@@ -272,6 +272,7 @@ initServices = ->
   value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
   value('friendDAO', friendDAO).
   value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService)).
-  value('profileDAO',new ProfileDAO(publicRemoteStorageService))
+  value('profileDAO',new ProfileDAO(publicRemoteStorageService)).
+  value('localizer',new Localizer())
 
 initServices()

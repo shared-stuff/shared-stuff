@@ -69,6 +69,7 @@ isBlank = (str) -> !str || /^\s*$/.test(str)
 
 
 applyIfNeeded = ($scope,f)->
+  #if (!$scope.$$phase) $scope.$digest();
   if $scope.$root.$$phase
     f()
   else

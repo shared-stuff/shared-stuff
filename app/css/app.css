@@ -139,6 +139,18 @@ label {
     font-weight: bold;
 }
 
+label.checkBoxLabel::after {
+    content: ""
+}
+
+input[type="checkbox"] {
+    display: inline;
+}
+
+label.checkBoxLabel {
+    display: inline;
+}
+
 .error {
     color: red;
     margin-bottom: 1em;

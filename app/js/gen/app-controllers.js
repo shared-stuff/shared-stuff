@@ -53,7 +53,7 @@
       }
     };
     if ($scope.session.userAddress) {
-      return remoteStorageUtils.isLoggedOn(function(isLoggedOn) {
+      remoteStorageUtils.isLoggedOn(function(isLoggedOn) {
         if (isLoggedOn) {
           $scope.setLoggenOn();
         } else {
@@ -70,8 +70,12 @@
       });
     } else {
       $scope.$on('$beforeRouteChange', onRouteChange);
-      return $scope.isAppLoaded = true;
+      $scope.isAppLoaded = true;
     }
+    $scope.msValues = ['rent', 'gift', 'use-together'];
+    $scope.selected1 = ['rent', 'gift'];
+    $scope.selected2 = ['rent'];
+    return $scope.selectedSharingTypes = ['rent'];
   };
 
   AppController.needsUserLoggedIn = needsUserLoggedIn;
