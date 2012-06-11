@@ -60,13 +60,6 @@ AppController = ($scope,$location)->
     $scope.$on('$beforeRouteChange', onRouteChange)
     $scope.isAppLoaded = true
 
-  $scope.msValues = ['rent','gift','use-together']
-
-  $scope.selected1 = ['rent','gift']
-  $scope.selected2 = ['rent']
-
-  $scope.selectedSharingTypes = ['rent']
-
 AppController.needsUserLoggedIn = needsUserLoggedIn;
 
 AppController.$inject = ['$scope','$location']
