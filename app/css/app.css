@@ -97,13 +97,19 @@ h2 {
     color: #888;
 }
 
+.stuffFooter {
+    opacity: 0.8;
+}
+
 .owner {
     font-style: italic;
-    opacity: 0.8;
 }
 
 .friendStuffList {
     margin-top: 1em;
+}
+.friendStuffList .owner{
+    display: none;
 }
 
 .stuffImageBox {
@@ -130,6 +136,10 @@ h2 {
 }
 
 /* Forms */
+
+.multiSelect {
+    margin-bottom: 0.8em;
+}
 
 label::after {
     content: ": ";

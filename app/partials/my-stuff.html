@@ -23,11 +23,6 @@
 
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in stuffList | orderBy:sortAttribute ">
-        <h3><a href="#/mystuff/{{stuff.id}}">{{stuff.title || "Untitled"}}</a></h3>
-        <span stuff-image src="{{stuff.image}}"/>
-        <p class="description" ng-bind-html="stuff.description | urlize"></p>
-        <span ng-show="stuff.visibility == 'public'" class="owner visibility">Public</span>
-        {{stuff.categories}}
-        <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a>
+     <div my-stuff  item="stuff"/>
     </li>
 </ul>

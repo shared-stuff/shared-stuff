@@ -19,10 +19,7 @@
 
     <ul class="unstyled stuffList friendStuffList">
         <li ng-repeat="stuff in stuffList | orderBy:'title'">
-            <h3>{{stuff.title}}</h3>
-            <span stuff-image src="{{stuff.image}}"/>
-            <p class="description" ng-bind-html="stuff.description | urlize"></p>
-            <div class="owner">{{stuff.categories}} <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a></div>
+            <div friend-stuff  item="stuff"/>
         </li>
     </ul>
 

@@ -34,12 +34,6 @@
 
 <ul class="unstyled stuffList">
     <li ng-repeat="stuff in filteredStuffList | orderBy:sortAttribute">
-
-        <h3>{{stuff.title}}</h3>
-        <span stuff-image src="{{stuff.image}}"/>
-        <p class="description" ng-bind-html="stuff.description | urlize"></p>
-
-        <div class="owner">{{stuff.categories}} <a href="#/friends/{{stuff.owner.id}}">{{stuff.owner.name}}</a> ({{ stuff.modified | date}})
-            <a ng-show="stuff.link" href="{{stuff.link}}" target="link">External Link</a></div>
+        <div friend-stuff  item="stuff"/>
     </li>
 </ul>

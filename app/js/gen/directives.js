@@ -45,9 +45,9 @@
           values: 'accessor',
           localizationType: 'attribute'
         },
-        template: " LOC:{{localizationType}}:\n<div class=\"multiSelect\">\n  <span ng-repeat=\"option in options()\">\n    <label class=\"checkBoxLabel\">\n      <input type=\"checkbox\" ng-model=\"selected[option]\"> {{option | localize:localizationType}}\n    </label>\n  </span>\n</div>",
+        template: "<div class=\"multiSelect\">\n  <span ng-repeat=\"option in options()\">\n    <label class=\"checkBoxLabel\">\n      <input type=\"checkbox\" ng-model=\"selected[option]\"> {{option | localize:localizationType}}\n    </label>\n  </span>\n</div>",
         link: function($scope, elm, attrs) {
-          $scope.$watch('values', function() {
+          $scope.$watch('values()', function() {
             var value, _i, _len, _ref, _results;
             $scope.selected = {};
             _ref = $scope.values();
@@ -83,7 +83,9 @@
         template: "<div multi-select options=\"options\" values=\"values2\" localization-type=\"sharingType\"/>",
         link: function($scope, elm, attrs) {
           $scope.options = sharingTypeOptions;
-          $scope.values2 = $scope.values();
+          $scope.$watch('values()', function() {
+            return $scope.values2 = $scope.values();
+          }, true);
           return $scope.$watch('values2', function() {
             return $scope.values($scope.values2);
           }, true);
@@ -96,7 +98,25 @@
         scope: {
           values: 'accessor'
         },
-        template: "For: {{values() | sharingTypes}}"
+        template: "<span ng-show=\"values().length\">for {{values() | sharingTypes}}</span>"
+      };
+    }
+  ]).directive('myStuff', [
+    function() {
+      return {
+        scope: {
+          item: 'evaluate'
+        },
+        template: "<h3><a href=\"#/mystuff/{{item.id}}\">{{item.title || \"Untitled\"}}</a></h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      <span ng-show=\"item.visibility == 'public'\" class=\"owner visibility\">Public</span>\n      {{item.categories}}\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
+      };
+    }
+  ]).directive('friendStuff', [
+    function() {
+      return {
+        scope: {
+          item: 'evaluate'
+        },
+        template: "<h3><a href=\"#/mystuff/{{item.id}}\">{{item.title || \"Untitled\"}}</a></h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      {{item.categories}}\n      <span class=\"owner\" ng-show=\"item.owner\">from <a href=\"#/friends/{{item.owner.id}}\">{{item.owner.name}}</a></span> ({{ item.modified | date}})\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
       };
     }
   ]);

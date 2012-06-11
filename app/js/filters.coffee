@@ -9,12 +9,14 @@ angular.module('myApp.filters', []).
     (text) -> urlize(text,{target:'link'})
   ).
   filter('sharingTypes', ['localizer',(localizer) ->
-    (sharingTypes) -> (localizer.sharingType(t) for t in sharingTypes).join(', ')
+    (sharingTypes) ->
+      if sharingTypes
+        (localizer.sharingType(t) for t in sharingTypes).join(', ')
+      else
+        return ""
   ]).
   filter('localize', ['localizer',(localizer) ->
     (id,locType) ->
-      log("locType")
-      log(locType)
       if localizer[locType]
         return localizer[locType](id) || id
       else

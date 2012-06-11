@@ -56,7 +56,9 @@ MyStuffEditController = ($scope, stuffDAO, $routeParams, $location)->
   $scope.circles = circles
 
   stuffDAO.getItem($routeParams.id, (stuff)->
+    log(stuff)
     $scope.stuff = new Stuff(stuff)
+    log($scope.stuff)
     $scope.$digest()
   )
 

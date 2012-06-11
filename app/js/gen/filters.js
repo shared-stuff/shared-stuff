@@ -19,22 +19,24 @@
     'localizer', function(localizer) {
       return function(sharingTypes) {
         var t;
-        return ((function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = sharingTypes.length; _i < _len; _i++) {
-            t = sharingTypes[_i];
-            _results.push(localizer.sharingType(t));
-          }
-          return _results;
-        })()).join(', ');
+        if (sharingTypes) {
+          return ((function() {
+            var _i, _len, _results;
+            _results = [];
+            for (_i = 0, _len = sharingTypes.length; _i < _len; _i++) {
+              t = sharingTypes[_i];
+              _results.push(localizer.sharingType(t));
+            }
+            return _results;
+          })()).join(', ');
+        } else {
+          return "";
+        }
       };
     }
   ]).filter('localize', [
     'localizer', function(localizer) {
       return function(id, locType) {
-        log("locType");
-        log(locType);
         if (localizer[locType]) {
           return localizer[locType](id) || id;
         } else {

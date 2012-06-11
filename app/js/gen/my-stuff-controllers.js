@@ -68,7 +68,9 @@
     $scope.stuff = new Stuff();
     $scope.circles = circles;
     stuffDAO.getItem($routeParams.id, function(stuff) {
+      log(stuff);
       $scope.stuff = new Stuff(stuff);
+      log($scope.stuff);
       return $scope.$digest();
     });
     redirectToList = function() {

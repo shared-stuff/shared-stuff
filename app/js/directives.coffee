@@ -30,7 +30,7 @@ directive('stuffImage', [->
 directive('multiSelect', [->
   {
     scope: {options: 'accessor', values:'accessor', localizationType:'attribute'}
-    template: """ LOC:{{localizationType}}:
+    template: """
             <div class="multiSelect">
               <span ng-repeat="option in options()">
                 <label class="checkBoxLabel">
@@ -40,7 +40,7 @@ directive('multiSelect', [->
             </div>
             """,
     link: ($scope, elm, attrs) ->
-      $scope.$watch('values', ->
+      $scope.$watch('values()', ->
         $scope.selected = {}
         for value in $scope.values()
           $scope.selected[value] = true
@@ -57,7 +57,9 @@ directive('sharingTypesSelect', [->
   template: """<div multi-select options="options" values="values2" localization-type="sharingType"/>""",
   link: ($scope, elm, attrs) ->
     $scope.options = sharingTypeOptions
-    $scope.values2 = $scope.values()
+    $scope.$watch('values()', ->
+      $scope.values2 = $scope.values()
+    ,true)
     $scope.$watch('values2', ->
       $scope.values($scope.values2)
     ,true)
@@ -67,7 +69,39 @@ directive('sharingTypes', [->
   {
   scope: {values: 'accessor'}
   template:"""
-    For: {{values() | sharingTypes}}
+    <span ng-show="values().length">for {{values() | sharingTypes}}</span>
     """
+  }
+]).
+directive('myStuff', [->
+  {
+  scope: {item: 'evaluate'}
+  template:"""
+        <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
+          <span stuff-image src="{{item.image}}"/>
+          <p class="description" ng-bind-html="item.description | urlize"></p>
+          <p class="stuffFooter">
+              <span ng-show="item.visibility == 'public'" class="owner visibility">Public</span>
+              {{item.categories}}
+              <span sharing-types values="item.sharingTypes" />
+              <a ng-show="item.link" href="{{item.link}}" target="link">External Link</a>
+          </p>
+      """
+  }
+]).
+directive('friendStuff', [->
+  {
+  scope: {item: 'evaluate'}
+  template:"""
+          <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
+            <span stuff-image src="{{item.image}}"/>
+            <p class="description" ng-bind-html="item.description | urlize"></p>
+            <p class="stuffFooter">
+                {{item.categories}}
+                <span class="owner" ng-show="item.owner">from <a href="#/friends/{{item.owner.id}}">{{item.owner.name}}</a></span> ({{ item.modified | date}})
+                <span sharing-types values="item.sharingTypes" />
+                <a ng-show="item.link" href="{{item.link}}" target="link">External Link</a>
+            </p>
+        """
   }
 ])
