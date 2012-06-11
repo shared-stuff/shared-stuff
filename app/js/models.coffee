@@ -1,13 +1,12 @@
 isBlank = utils.isBlank
 
-
 class Stuff
   constructor: (props)->
     @title = props?.title || ''
     @description = props?.description || ''
     # 'friends','public'
     @visibility = props?.visibility || 'friends'
-    # 'rent','use-together','gift','sell'
+    # Stuff.sharingTypeValues
     @sharingTypes = props?.sharingTypes || ['rent']
     @categories = props?.categories || ''
     @link = props?.link || ''
@@ -19,6 +18,8 @@ class Stuff
 
   modify: ()->
     @modified = new Date().getTime()
+
+  Stuff.sharingTypeValues = ['rent','gift','use-together']
 
 
 class Friend

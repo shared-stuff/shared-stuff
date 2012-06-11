@@ -1,6 +1,3 @@
-sharingTypeOptions = ['rent','gift','use-together']
-
-
 angular.module('myApp.directives', []).
 directive('appVersion', ['version', (version) ->
   (scope, elm, attrs) -> elm.text(version)
@@ -56,7 +53,7 @@ directive('sharingTypesSelect', [->
   scope: {values: 'accessor'}
   template: """<div multi-select options="options" values="values2" localization-type="sharingType"/>""",
   link: ($scope, elm, attrs) ->
-    $scope.options = sharingTypeOptions
+    $scope.options = Stuff.sharingTypeValues
     $scope.$watch('values()', ->
       $scope.values2 = $scope.values()
     ,true)

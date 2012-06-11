@@ -24,6 +24,8 @@
       return this.modified = new Date().getTime();
     };
 
+    Stuff.sharingTypeValues = ['rent', 'gift', 'use-together'];
+
     return Stuff;
 
   })();
