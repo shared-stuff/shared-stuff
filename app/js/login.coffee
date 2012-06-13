@@ -2,13 +2,6 @@ log = utils.log
 rs = remoteStorageUtils
 
 LoginController = ($scope,$location)->
-  log("Login")
-  #$scope.session.isLoggedIn = false
-  #$scope.userAddress = ""
-
-  if $scope.session.isLoggedIn
-    $location.path('/friends-stuff').replace()
-
   $scope.login = ->
     try
       userAddress = $scope.userAddress

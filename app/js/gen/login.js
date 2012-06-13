@@ -6,8 +6,6 @@
   rs = remoteStorageUtils;
 
   LoginController = function($scope, $location) {
-    log("Login");
-    if ($scope.session.isLoggedIn) $location.path('/friends-stuff').replace();
     return $scope.login = function() {
       var userAddress;
       try {

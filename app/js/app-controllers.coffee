@@ -40,9 +40,11 @@ AppController = ($scope,$location)->
     log(path)
     if !$scope.session.isLoggedIn and needsUserLoggedIn($location.path())
       sessionStorage.setItem('targetPath',path)
-      applyIfNeeded($scope, ->
-        $location.path('/login').replace()
-      )
+      applyIfNeeded($scope, -> $location.path('/login').replace())
+    else if path=='/login' && $scope.session.isLoggedIn
+      applyIfNeeded($scope, -> $location.path('/friends-stuff').replace())
+
+
 
   if $scope.session.userAddress
     remoteStorageUtils.isLoggedOn (isLoggedOn) ->
@@ -54,7 +56,7 @@ AppController = ($scope,$location)->
           isLoggedIn: false
         }
         applyIfNeeded($scope, -> $scope.isAppLoaded = true)
-        onRouteChange()
+      onRouteChange()
       $scope.$on('$beforeRouteChange', onRouteChange)
   else
     $scope.$on('$beforeRouteChange', onRouteChange)
