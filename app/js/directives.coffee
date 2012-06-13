@@ -90,7 +90,7 @@ directive('friendStuff', [->
   {
   scope: {item: 'evaluate'}
   template:"""
-          <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
+          <h3>{{item.title || "Untitled"}}</h3>
             <span stuff-image src="{{item.image}}"/>
             <p class="description" ng-bind-html="item.description | urlize"></p>
             <p class="stuffFooter">

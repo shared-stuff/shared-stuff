@@ -113,7 +113,7 @@
         scope: {
           item: 'evaluate'
         },
-        template: "<h3><a href=\"#/mystuff/{{item.id}}\">{{item.title || \"Untitled\"}}</a></h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      {{item.categories}}\n      <span class=\"owner\" ng-show=\"item.owner\">from <a href=\"#/friends/{{item.owner.id}}\">{{item.owner.name}}</a></span> ({{ item.modified | date}})\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
+        template: "<h3>{{item.title || \"Untitled\"}}</h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      {{item.categories}}\n      <span class=\"owner\" ng-show=\"item.owner\">from <a href=\"#/friends/{{item.owner.id}}\">{{item.owner.name}}</a></span> ({{ item.modified | date}})\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
       };
     }
   ]);
