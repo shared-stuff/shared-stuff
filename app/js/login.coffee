@@ -6,6 +6,9 @@ LoginController = ($scope,$location)->
   #$scope.session.isLoggedIn = false
   #$scope.userAddress = ""
 
+  if $scope.session.isLoggedIn
+    $location.path('/friends-stuff').replace()
+
   $scope.login = ->
     try
       userAddress = $scope.userAddress
