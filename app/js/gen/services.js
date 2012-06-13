@@ -68,9 +68,13 @@
     };
 
     RemoteStorageDAO.prototype.getItem = function(id, callback) {
+      return this.getItemBy('id', id, callback);
+    };
+
+    RemoteStorageDAO.prototype.getItemBy = function(attribute, value, callback) {
       return this.readAllItems(function(items) {
         return callback(_.find(items, function(it) {
-          return it.id === id;
+          return it[attribute] === value;
         }));
       });
     };

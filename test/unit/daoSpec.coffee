@@ -42,10 +42,11 @@ describe('RemoteStorageDAO',->
 
   beforeEach ->
     remoteStorageUtilsMock = createRemoteStorageUtilsMock()
-    remoteStorageUtilsMock.setItemObjectSync(rsCategory,rsKey,{items:[{userAddress:'username@host.org'}]})
+
 
   it('should load data with remoteStorageUtils', ->
     rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock,rsCategory, rsKey)
+    remoteStorageUtilsMock.setItemObjectSync(rsCategory,rsKey,{items:[{userAddress:'username@host.org'}]})
 
     items = undefined
     rsDAO.list (itemsResultArg) ->
@@ -62,8 +63,11 @@ describe('RemoteStorageDAO',->
 
   )
 
+
   # this is useful to wrap the rawdata into a proper class
   it('should wrap items', ->
+    remoteStorageUtilsMock.setItemObjectSync(rsCategory,rsKey,{items:[{userAddress:'username@host.org'}]})
+
     wrapItem = (itemData) -> {name: itemData.userAddress}
 
     rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock,rsCategory, rsKey, wrapItem)
@@ -83,7 +87,10 @@ describe('RemoteStorageDAO',->
 
   )
 
+
   it('should save data with remoteStorageUtils', ->
+    remoteStorageUtilsMock.setItemObjectSync(rsCategory,rsKey,{items:[{userAddress:'username@host.org'}]})
+
     rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock,rsCategory, rsKey)
 
     saved = false
@@ -102,7 +109,35 @@ describe('RemoteStorageDAO',->
       expect(items[0].userAddress).toEqual('username@host.org')
       expect(items[1].userAddress).toEqual('username2@host.org')
   )
+
+
+  it('should find items by any attribute', ->
+    remoteStorageUtilsMock.setItemObjectSync(rsCategory,rsKey,{
+      items:[
+        {userAddress:'username1@host.org',name:'username 1'},
+        {userAddress:'username2@host.org',name:'username 2'}
+      ]
+    })
+
+    rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock,rsCategory, rsKey)
+
+    foundItem = undefined
+    rsDAO.getItemBy('userAddress','username2@host.org',(itemResultArg) -> foundItem = itemResultArg)
+
+    waitsFor( (-> foundItem) ,"Saving", 1000)
+
+    runs ->
+      items = remoteStorageUtilsMock.getItemObjectSync(rsCategory,rsKey).items
+      expect(foundItem.name).toEqual('username 2')
+  )
+
 )
+
+
+
+
+
+
 
 describe('MyStuffDAO',->
   rsCategory = "rsCategory"

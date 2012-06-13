@@ -37,8 +37,11 @@ class RemoteStorageDAO
     @readAllItems(callback)
 
   getItem: (id, callback) ->
+    @getItemBy('id',id,callback)
+
+  getItemBy: (attribute,value, callback) ->
     @readAllItems (items) ->
-      callback(_.find(items, (it) -> it.id == id))
+      callback(_.find(items, (it) -> it[attribute] == value))
 
   save: (allItems, callback) ->
     utils.cleanObjectFromAngular(allItems)

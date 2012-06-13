@@ -11,6 +11,9 @@
     <div class="error" ng-show="!itemForm.userAddress.$valid && showValidationErrors">Valid Remote Storage Address is
         required! Example: shybyte@owncube.com
     </div>
+    <div class="error" ng-show="existingFriend">
+        It seems that <a href="#/friends/{{existingFriend.id}}">{{existingFriend.userAddress}} (as {{existingFriend.name}})</a> is already in your list of friends.
+    </div>
 
     <label for="secret">Secret (Leave empty for public stuff)</label>
     <input id="secret" name="secret" ng-model="friend.secret" ng-model-instant placeholder="public stuff"/>

@@ -1,4 +1,4 @@
-<div class="box">
+<div class="box" xmlns="http://www.w3.org/1999/html">
 
     <h2>Invitation from {{friend.name || "No Name"}}</h2>
 
@@ -7,7 +7,11 @@
         {{friend.name}} wants to share some real stuff with you!
     </p>
 
-    <button class="btn btn-primary" ng-click="addFriend()" ng-hide="!session.isLoggedIn">Add to my friends</button>
+    <p ng-show="existingFriend">
+        It seems that <a href="#/friends/{{existingFriend.id}}">{{friend.name}}</a> is already in your list of friends.
+    </p>
+
+    <button class="btn btn-primary" ng-click="addFriend()" ng-hide="!session.isLoggedIn || existingFriend">Add to my friends</button>
 
     <div ng-hide="session.isLoggedIn">
         <p>In order to add {{friend.name}} to your friends and share your stuff with your friends you need to login to

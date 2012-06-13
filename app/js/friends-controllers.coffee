@@ -5,11 +5,11 @@ isBlank = utils.isBlank
 applyIfNeeded =  utils.applyIfNeeded
 
 
-
 FriendsController = ($scope,friendDAO,friendsStuffDAO,$location,$routeParams)->
   $scope.friendList = []
   $scope.isAddFriendFormHidden = true
   $scope.isInviteFriendButtonShown = true
+  $scope.friend = new Friend()
 
   friendDAO.list (restoredFriendList)->
     $scope.friendList = restoredFriendList
@@ -29,7 +29,7 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,$location,$routeParams)->
     $scope.isAddFriendFormHidden = true
     $scope.isInviteFriendButtonShown = true
 
-  $scope.friend = new Friend()
+
 
   $scope.addFriend = ()->
     $scope.friend.sanitize()
@@ -47,6 +47,17 @@ FriendsController = ($scope,friendDAO,friendsStuffDAO,$location,$routeParams)->
     )
   $scope.inviteFriend = ->
     $location.path('/share-stuff')
+
+  $scope.$watch('friend.userAddress', (newValue)->
+    if !isBlank(newValue)
+      friendDAO.getItemBy('userAddress',newValue,  (existingFriendArg) ->
+        applyIfNeeded($scope, ->
+          $scope.existingFriend = existingFriendArg
+        )
+      )
+    else
+      $scope.existingFriend = undefined
+  )
 
   focus('showAddFriendFormButton')
 
@@ -131,6 +142,7 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   userAddress = $routeParams.user+'@'+$routeParams.host
   friend = new Friend({userAddress:userAddress,secret:$routeParams.secret})
   $scope.friend = friend
+  $scope.existingFriend = undefined
   $scope.profile = {}
   $scope.status = "LOADING"
 
@@ -140,6 +152,12 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
     $scope.status = "LOADED"
     $scope.$digest()
   )
+
+  if $scope.session.isLoggedIn
+    friendDAO.getItemBy('userAddress',friend.userAddress, (existingFriendArg) ->
+      $scope.existingFriend = existingFriendArg
+    )
+
 
   profileDAO.getByFriend(friend,(profile) ->
     $scope.profile = new Profile(profile)

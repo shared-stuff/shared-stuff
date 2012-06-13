@@ -46,18 +46,18 @@
     rsKey = "rsKey";
     remoteStorageUtilsMock = void 0;
     beforeEach(function() {
-      remoteStorageUtilsMock = createRemoteStorageUtilsMock();
-      return remoteStorageUtilsMock.setItemObjectSync(rsCategory, rsKey, {
+      return remoteStorageUtilsMock = createRemoteStorageUtilsMock();
+    });
+    it('should load data with remoteStorageUtils', function() {
+      var items, rsDAO;
+      rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock, rsCategory, rsKey);
+      remoteStorageUtilsMock.setItemObjectSync(rsCategory, rsKey, {
         items: [
           {
             userAddress: 'username@host.org'
           }
         ]
       });
-    });
-    it('should load data with remoteStorageUtils', function() {
-      var items, rsDAO;
-      rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock, rsCategory, rsKey);
       items = void 0;
       rsDAO.list(function(itemsResultArg) {
         return items = itemsResultArg;
@@ -72,6 +72,13 @@
     });
     it('should wrap items', function() {
       var items, rsDAO, wrapItem;
+      remoteStorageUtilsMock.setItemObjectSync(rsCategory, rsKey, {
+        items: [
+          {
+            userAddress: 'username@host.org'
+          }
+        ]
+      });
       wrapItem = function(itemData) {
         return {
           name: itemData.userAddress
@@ -90,8 +97,15 @@
         return expect(items[0].name).toEqual('username@host.org');
       });
     });
-    return it('should save data with remoteStorageUtils', function() {
+    it('should save data with remoteStorageUtils', function() {
       var rsDAO, saved;
+      remoteStorageUtilsMock.setItemObjectSync(rsCategory, rsKey, {
+        items: [
+          {
+            userAddress: 'username@host.org'
+          }
+        ]
+      });
       rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock, rsCategory, rsKey);
       saved = false;
       rsDAO.saveItem({
@@ -109,6 +123,33 @@
         expect(items.length).toEqual(2);
         expect(items[0].userAddress).toEqual('username@host.org');
         return expect(items[1].userAddress).toEqual('username2@host.org');
+      });
+    });
+    return it('should find items by any attribute', function() {
+      var foundItem, rsDAO;
+      remoteStorageUtilsMock.setItemObjectSync(rsCategory, rsKey, {
+        items: [
+          {
+            userAddress: 'username1@host.org',
+            name: 'username 1'
+          }, {
+            userAddress: 'username2@host.org',
+            name: 'username 2'
+          }
+        ]
+      });
+      rsDAO = new RemoteStorageDAO(remoteStorageUtilsMock, rsCategory, rsKey);
+      foundItem = void 0;
+      rsDAO.getItemBy('userAddress', 'username2@host.org', function(itemResultArg) {
+        return foundItem = itemResultArg;
+      });
+      waitsFor((function() {
+        return foundItem;
+      }), "Saving", 1000);
+      return runs(function() {
+        var items;
+        items = remoteStorageUtilsMock.getItemObjectSync(rsCategory, rsKey).items;
+        return expect(foundItem.name).toEqual('username 2');
       });
     });
   });
