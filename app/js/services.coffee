@@ -14,8 +14,10 @@ PROFILE_KEY = PUBLIC_PREFIX+"profile"
 
 rs = remoteStorageUtils
 
+wrapIdentity = (item) -> item
+
 class RemoteStorageDAO
-  constructor: (@category, @key) ->
+  constructor: (@remoteStorageUtils,@category, @key,@wrapItem = wrapIdentity) ->
 
   readAllItems: (callback) ->
     self = this
@@ -23,10 +25,9 @@ class RemoteStorageDAO
       defer ->
         callback(self.dataCache.items)
     else
-      rs.getItem(@category, @key, (error, data)->
-          self.dataCache = JSON.parse(data || '{"items":[]}')
-          if !self.dataCache.items
-            self.dataCache = {items: []}
+      self.remoteStorageUtils.getItem(@category, @key, (error, data)->
+          self.dataCache = JSON.parse(data || '{}')
+          self.dataCache.items = getItemsFromContainer(self.dataCache,self.wrapItem)
           callback(self.dataCache.items)
       )
 
@@ -44,7 +45,7 @@ class RemoteStorageDAO
     if !@dataCache
       @dataCache = {}
     @dataCache.items = allItems
-    rs.setItem(@category, @key, JSON.stringify(@dataCache), callback)
+    @remoteStorageUtils.setItem(@category, @key, JSON.stringify(@dataCache), callback)
 
   saveItem: (item, callback) ->
     self = @
@@ -64,14 +65,16 @@ class RemoteStorageDAO
 
 
 class MyStuffDAO extends RemoteStorageDAO
-  constructor: (@category, @key, @settingsDAO) ->
+  constructor: (@remoteStorageUtils,@category, @key, @settingsDAO) ->
+    super(@remoteStorageUtils,@category,@key, (stuffData) -> new Stuff(stuffData))
 
   save: (allItems, callback) ->
+    self = this
     super(allItems, callback)
     @settingsDAO.getSecret (secret)->
-      rs.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify({items:allItems}), doNothing)
+      self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify({items:allItems}), doNothing)
     publicStuff = _.filter(allItems, (item)-> item.visibility=='public')
-    rs.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify({items:publicStuff}), doNothing)
+    self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify({items:publicStuff}), doNothing)
 
 
 class LocalStorageDAO
@@ -262,17 +265,22 @@ getFriendStuffKey = (friend) -> PUBLIC_PREFIX + (if !isBlank(friend.secret) then
 
 
 initServices = ->
-  friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList')
+  friendDAO = new RemoteStorageDAO(remoteStorageUtils,RS_CATEGORY, 'myFriendsList', (data) -> new Friend(data))
   settingsDAO = new SettingsDAO()
   publicRemoteStorageService = new PublicRemoteStorageService()
 
   angular.module('myApp.services', []).
   value('version', '0.1').
   value('settingsDAO', settingsDAO).
-  value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
+  value('stuffDAO', new MyStuffDAO(remoteStorageUtils,RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
   value('friendDAO', friendDAO).
   value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService)).
   value('profileDAO',new ProfileDAO(publicRemoteStorageService)).
   value('localizer',new Localizer())
 
 initServices()
+
+
+#export
+this.RemoteStorageDAO = RemoteStorageDAO
+this.MyStuffDAO = MyStuffDAO

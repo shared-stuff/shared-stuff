@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, log, randomString, rs,
+  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, log, randomString, rs, wrapIdentity,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -28,11 +28,17 @@
 
   rs = remoteStorageUtils;
 
+  wrapIdentity = function(item) {
+    return item;
+  };
+
   RemoteStorageDAO = (function() {
 
-    function RemoteStorageDAO(category, key) {
+    function RemoteStorageDAO(remoteStorageUtils, category, key, wrapItem) {
+      this.remoteStorageUtils = remoteStorageUtils;
       this.category = category;
       this.key = key;
+      this.wrapItem = wrapItem != null ? wrapItem : wrapIdentity;
     }
 
     RemoteStorageDAO.prototype.readAllItems = function(callback) {
@@ -43,13 +49,9 @@
           return callback(self.dataCache.items);
         });
       } else {
-        return rs.getItem(this.category, this.key, function(error, data) {
-          self.dataCache = JSON.parse(data || '{"items":[]}');
-          if (!self.dataCache.items) {
-            self.dataCache = {
-              items: []
-            };
-          }
+        return self.remoteStorageUtils.getItem(this.category, this.key, function(error, data) {
+          self.dataCache = JSON.parse(data || '{}');
+          self.dataCache.items = getItemsFromContainer(self.dataCache, self.wrapItem);
           return callback(self.dataCache.items);
         });
       }
@@ -77,7 +79,7 @@
       utils.cleanObjectFromAngular(allItems);
       if (!this.dataCache) this.dataCache = {};
       this.dataCache.items = allItems;
-      return rs.setItem(this.category, this.key, JSON.stringify(this.dataCache), callback);
+      return this.remoteStorageUtils.setItem(this.category, this.key, JSON.stringify(this.dataCache), callback);
     };
 
     RemoteStorageDAO.prototype.saveItem = function(item, callback) {
@@ -113,24 +115,29 @@
 
     __extends(MyStuffDAO, _super);
 
-    function MyStuffDAO(category, key, settingsDAO) {
+    function MyStuffDAO(remoteStorageUtils, category, key, settingsDAO) {
+      this.remoteStorageUtils = remoteStorageUtils;
       this.category = category;
       this.key = key;
       this.settingsDAO = settingsDAO;
+      MyStuffDAO.__super__.constructor.call(this, this.remoteStorageUtils, this.category, this.key, function(stuffData) {
+        return new Stuff(stuffData);
+      });
     }
 
     MyStuffDAO.prototype.save = function(allItems, callback) {
-      var publicStuff;
+      var publicStuff, self;
+      self = this;
       MyStuffDAO.__super__.save.call(this, allItems, callback);
       this.settingsDAO.getSecret(function(secret) {
-        return rs.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify({
+        return self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify({
           items: allItems
         }), doNothing);
       });
       publicStuff = _.filter(allItems, function(item) {
         return item.visibility === 'public';
       });
-      return rs.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify({
+      return self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify({
         items: publicStuff
       }), doNothing);
     };
@@ -422,12 +429,18 @@
 
   initServices = function() {
     var friendDAO, publicRemoteStorageService, settingsDAO;
-    friendDAO = new RemoteStorageDAO(RS_CATEGORY, 'myFriendsList');
+    friendDAO = new RemoteStorageDAO(remoteStorageUtils, RS_CATEGORY, 'myFriendsList', function(data) {
+      return new Friend(data);
+    });
     settingsDAO = new SettingsDAO();
     publicRemoteStorageService = new PublicRemoteStorageService();
-    return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService)).value('localizer', new Localizer());
+    return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(remoteStorageUtils, RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService)).value('localizer', new Localizer());
   };
 
   initServices();
+
+  this.RemoteStorageDAO = RemoteStorageDAO;
+
+  this.MyStuffDAO = MyStuffDAO;
 
 }).call(this);
