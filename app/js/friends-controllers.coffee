@@ -70,6 +70,7 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   $scope.stuffList = []
   $scope.profile = {}
   $scope.showValidationErrors=true
+  $scope.status = "LOADING"
 
   loadFriend = ->
     friendDAO.getItem($routeParams.id,(friend)->
@@ -77,6 +78,7 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
       $scope.$digest()
       friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
           $scope.stuffList = friendStuff
+          $scope.status = "LOADED"
           $scope.$digest()
       )
       profileDAO.getByFriend(friend,(profile) ->
@@ -130,9 +132,12 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   friend = new Friend({userAddress:userAddress,secret:$routeParams.secret})
   $scope.friend = friend
   $scope.profile = {}
+  $scope.status = "LOADING"
+
 
   friendsStuffDAO.listStuffByFriend(friend, (friendStuff) ->
     $scope.stuffList = friendStuff
+    $scope.status = "LOADED"
     $scope.$digest()
   )
 

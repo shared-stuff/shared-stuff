@@ -360,14 +360,18 @@
           var client;
           if (storageInfo) {
             client = remoteStorage.createClient(storageInfo, 'public');
-            return client.get(getFriendStuffKey(friend), function(err, data) {
-              if (data) {
-                return callback([]);
-              } else {
-                log(err);
-                return callback(['secret']);
-              }
-            });
+            if (isBlank(friend.secret)) {
+              return callback([]);
+            } else {
+              return client.get(getFriendStuffKey(friend), function(err, data) {
+                if (data) {
+                  return callback([]);
+                } else {
+                  log(err);
+                  return callback(['secret']);
+                }
+              });
+            }
           } else {
             log(error);
             return callback(['userAddress']);

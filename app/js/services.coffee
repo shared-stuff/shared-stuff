@@ -221,13 +221,16 @@ class FriendsStuffDAO
       remoteStorage.getStorageInfo(friend.userAddress, (error, storageInfo) ->
           if storageInfo
             client = remoteStorage.createClient(storageInfo, 'public')
-            client.get(getFriendStuffKey(friend), (err, data) ->
-                if data
-                  callback([])
-                else
-                  log(err)
-                  callback(['secret'])
-            )
+            if isBlank(friend.secret)
+              callback([])
+            else
+              client.get(getFriendStuffKey(friend), (err, data) ->
+                  if data
+                    callback([])
+                  else
+                    log(err)
+                    callback(['secret'])
+              )
           else
             log(error)
             callback(['userAddress'])

@@ -23,3 +23,7 @@
         <div friend-stuff  item="stuff"/>
     </li>
 </ul>
+
+<div class="alert alert-info" ng-show="stuffList.length==0 && status=='LOADED'">
+    It seems that {{friend.name}} has no Stuff. You could ask {{friend.name}} to add some stuff!
+</div>

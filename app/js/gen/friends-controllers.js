@@ -82,12 +82,14 @@
     $scope.stuffList = [];
     $scope.profile = {};
     $scope.showValidationErrors = true;
+    $scope.status = "LOADING";
     loadFriend = function() {
       return friendDAO.getItem($routeParams.id, function(friend) {
         $scope.friend = new Friend(friend);
         $scope.$digest();
         friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
           $scope.stuffList = friendStuff;
+          $scope.status = "LOADED";
           return $scope.$digest();
         });
         return profileDAO.getByFriend(friend, function(profile) {
@@ -150,8 +152,10 @@
     });
     $scope.friend = friend;
     $scope.profile = {};
+    $scope.status = "LOADING";
     friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
       $scope.stuffList = friendStuff;
+      $scope.status = "LOADED";
       return $scope.$digest();
     });
     profileDAO.getByFriend(friend, function(profile) {
