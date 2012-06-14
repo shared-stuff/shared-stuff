@@ -206,16 +206,20 @@ class PublicRemoteStorageService
 getItemsFromContainer = (itemContainer,wrapItem) -> _.map(itemContainer?.items || [],wrapItem)
 
 class FriendsStuffDAO
-  constructor: (@friendDAO,@publicRemoteStorageDAO) ->
+  constructor: (@friendDAO,@publicRemoteStorageDAO,@profileDAO) ->
     @friendsStuffList = []
 
   listStuffByFriend: (friend, callback) ->
-    @publicRemoteStorageDAO.get(friend.userAddress,getFriendStuffKey(friend),[], (itemContainer)->
-      callback(getItemsFromContainer(itemContainer, (item)->
-        item = new Stuff(item)
-        item.owner = friend
-        return item
-      ))
+    self = this
+    @profileDAO.getByFriend(friend, (profile) ->
+      friend.location = profile.location
+      self.publicRemoteStorageDAO.get(friend.userAddress,getFriendStuffKey(friend),[], (itemContainer)->
+        callback(getItemsFromContainer(itemContainer, (item)->
+          item = new Stuff(item)
+          item.owner = friend
+          return item
+        ))
+      )
     )
 
   # returns a list of invalid attributes
@@ -274,14 +278,15 @@ initServices = ->
   friendDAO = new RemoteStorageDAO(remoteStorageUtils,RS_CATEGORY, 'myFriendsList', (data) -> new Friend(data))
   settingsDAO = new SettingsDAO()
   publicRemoteStorageService = new PublicRemoteStorageService()
+  profileDAO = new ProfileDAO(publicRemoteStorageService)
 
   angular.module('myApp.services', []).
   value('version', '0.1').
   value('settingsDAO', settingsDAO).
   value('stuffDAO', new MyStuffDAO(remoteStorageUtils,RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).
   value('friendDAO', friendDAO).
-  value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService)).
-  value('profileDAO',new ProfileDAO(publicRemoteStorageService)).
+  value('friendsStuffDAO', new FriendsStuffDAO(friendDAO,publicRemoteStorageService,profileDAO)).
+  value('profileDAO',profileDAO).
   value('localizer',new Localizer())
 
 initServices()

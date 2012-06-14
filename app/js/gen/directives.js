@@ -102,9 +102,10 @@
     function() {
       return {
         scope: {
-          item: 'evaluate'
+          item: 'evaluate',
+          profile: 'accessor'
         },
-        template: "<h3><a href=\"#/mystuff/{{item.id}}\">{{item.title || \"Untitled\"}}</a></h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      <span ng-show=\"item.visibility == 'public'\" class=\"owner visibility\">Public</span>\n      {{item.categories}}\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
+        template: "<h3><a href=\"#/mystuff/{{item.id}}\">{{item.title || \"Untitled\"}}</a></h3>\n<span stuff-image src=\"{{item.image}}\"/>\n<p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n<p class=\"stuffFooter\">\n    <span ng-show=\"item.visibility == 'public'\" class=\"owner visibility\">Public</span>\n    {{item.categories}}\n    <span ng-show=\"item.location\">in {{item.getLocation()}}</span>\n    <span ng-show=\"!item.location && profile().location\">in your profile location {{profile().location}}</span>\n    <span sharing-types values=\"item.sharingTypes\" />\n    <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n</p>"
       };
     }
   ]).directive('friendStuff', [
@@ -113,7 +114,7 @@
         scope: {
           item: 'evaluate'
         },
-        template: "<h3>{{item.title || \"Untitled\"}}</h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      {{item.categories}}\n      <span class=\"owner\" ng-show=\"item.owner\">from <a href=\"#/friends/{{item.owner.id}}\">{{item.owner.name}}</a></span> ({{ item.modified | date}})\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
+        template: "<h3>{{item.title || \"Untitled\"}}</h3>\n  <span stuff-image src=\"{{item.image}}\"/>\n  <p class=\"description\" ng-bind-html=\"item.description | urlize\"></p>\n  <p class=\"stuffFooter\">\n      {{item.categories}}\n      <span class=\"owner\" ng-show=\"item.owner\">from <a href=\"#/friends/{{item.owner.id}}\">{{item.owner.name}}</a></span> ({{ item.modified | date}})\n      <span ng-show=\"item.getLocation()\">in {{item.getLocation()}}</span>\n      <span sharing-types values=\"item.sharingTypes\" />\n      <a ng-show=\"item.link\" href=\"{{item.link}}\" target=\"link\">External Link</a>\n  </p>"
       };
     }
   ]);

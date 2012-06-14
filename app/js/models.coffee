@@ -2,7 +2,6 @@ isBlank = utils.isBlank
 
 copyUnknownProps = (source,target) ->
   for k,v of source
-    utils.log(k)
     if !(k of target)
       target[k]=v
 
@@ -27,6 +26,8 @@ class Stuff
   modify: ()->
     @modified = new Date().getTime()
 
+  getLocation: -> @location || @owner?.location || ''
+
   Stuff.sharingTypeValues = ['rent','gift','use-together']
 
 
@@ -48,6 +49,7 @@ class Profile
     @name = props.name || ''
     @email = props.email || ''
     @image = props.image || ''
+    @location = props.location || ''
     copyUnknownProps(props,this)
 
   @isEmpty: -> isBlank(@name) && isBlank(@email) && isBlank(@image)

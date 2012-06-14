@@ -72,14 +72,16 @@ directive('sharingTypes', [->
 ]).
 directive('myStuff', [->
   {
-  scope: {item: 'evaluate'}
+  scope: {item: 'evaluate',profile: 'accessor'}
   template:"""
-        <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
+          <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
           <span stuff-image src="{{item.image}}"/>
           <p class="description" ng-bind-html="item.description | urlize"></p>
           <p class="stuffFooter">
               <span ng-show="item.visibility == 'public'" class="owner visibility">Public</span>
               {{item.categories}}
+              <span ng-show="item.location">in {{item.getLocation()}}</span>
+              <span ng-show="!item.location && profile().location">in your profile location {{profile().location}}</span>
               <span sharing-types values="item.sharingTypes" />
               <a ng-show="item.link" href="{{item.link}}" target="link">External Link</a>
           </p>
@@ -96,6 +98,7 @@ directive('friendStuff', [->
             <p class="stuffFooter">
                 {{item.categories}}
                 <span class="owner" ng-show="item.owner">from <a href="#/friends/{{item.owner.id}}">{{item.owner.name}}</a></span> ({{ item.modified | date}})
+                <span ng-show="item.getLocation()">in {{item.getLocation()}}</span>
                 <span sharing-types values="item.sharingTypes" />
                 <a ng-show="item.link" href="{{item.link}}" target="link">External Link</a>
             </p>

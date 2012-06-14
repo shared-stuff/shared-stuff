@@ -9,12 +9,16 @@ circles = {
   'public': 'Public'
 }
 
-MyStuffController = ($scope, stuffDAO)->
+MyStuffController = ($scope, stuffDAO,profileDAO)->
   $scope.stuffList = []
   $scope.isAddStuffFormHidden = true
   $scope.circles = circles
   $scope.sortAttribute = sessionStorage.getItem('my-stuff-sortAttribute') || '-modified'
   $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
+
+  profileDAO.load (profile) ->
+    $scope.profile = profile
+    $scope.$digest()
 
   stuffDAO.list (restoredStuffList)->
     $scope.stuffList = restoredStuffList
@@ -48,12 +52,16 @@ MyStuffController = ($scope, stuffDAO)->
 
   focus('showAddStuffFormButton')
 
-MyStuffController.$inject = ['$scope', 'stuffDAO']
+MyStuffController.$inject = ['$scope', 'stuffDAO','profileDAO']
 
 
-MyStuffEditController = ($scope, stuffDAO, $routeParams, $location)->
+MyStuffEditController = ($scope, stuffDAO,profileDAO, $routeParams, $location)->
   $scope.stuff = new Stuff()
   $scope.circles = circles
+
+  profileDAO.load (profile) ->
+    $scope.profile = profile
+    $scope.$digest()
 
   stuffDAO.getItem($routeParams.id, (stuff)->
     log(stuff)
@@ -79,7 +87,7 @@ MyStuffEditController = ($scope, stuffDAO, $routeParams, $location)->
     if window.confirm("Do you really want to delete this stuff called \"#{$scope.stuff.title}\"?")
       stuffDAO.deleteItem($scope.stuff.id, redirectToList)
 
-MyStuffEditController.$inject = ['$scope', 'stuffDAO', '$routeParams', '$location']
+MyStuffEditController.$inject = ['$scope', 'stuffDAO','profileDAO','$routeParams', '$location']
 
 
 #export

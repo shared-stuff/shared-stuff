@@ -342,19 +342,25 @@
 
   FriendsStuffDAO = (function() {
 
-    function FriendsStuffDAO(friendDAO, publicRemoteStorageDAO) {
+    function FriendsStuffDAO(friendDAO, publicRemoteStorageDAO, profileDAO) {
       this.friendDAO = friendDAO;
       this.publicRemoteStorageDAO = publicRemoteStorageDAO;
+      this.profileDAO = profileDAO;
       this.friendsStuffList = [];
     }
 
     FriendsStuffDAO.prototype.listStuffByFriend = function(friend, callback) {
-      return this.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer) {
-        return callback(getItemsFromContainer(itemContainer, function(item) {
-          item = new Stuff(item);
-          item.owner = friend;
-          return item;
-        }));
+      var self;
+      self = this;
+      return this.profileDAO.getByFriend(friend, function(profile) {
+        friend.location = profile.location;
+        return self.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer) {
+          return callback(getItemsFromContainer(itemContainer, function(item) {
+            item = new Stuff(item);
+            item.owner = friend;
+            return item;
+          }));
+        });
       });
     };
 
@@ -436,13 +442,14 @@
   };
 
   initServices = function() {
-    var friendDAO, publicRemoteStorageService, settingsDAO;
+    var friendDAO, profileDAO, publicRemoteStorageService, settingsDAO;
     friendDAO = new RemoteStorageDAO(remoteStorageUtils, RS_CATEGORY, 'myFriendsList', function(data) {
       return new Friend(data);
     });
     settingsDAO = new SettingsDAO();
     publicRemoteStorageService = new PublicRemoteStorageService();
-    return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(remoteStorageUtils, RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService)).value('profileDAO', new ProfileDAO(publicRemoteStorageService)).value('localizer', new Localizer());
+    profileDAO = new ProfileDAO(publicRemoteStorageService);
+    return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(remoteStorageUtils, RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService, profileDAO)).value('profileDAO', profileDAO).value('localizer', new Localizer());
   };
 
   initServices();

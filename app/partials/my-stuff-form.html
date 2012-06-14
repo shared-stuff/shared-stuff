@@ -10,10 +10,13 @@
     <label for="categories">Categories</label>
     <input id="categories" name="categories" ng-model="stuff.categories" ng-model-instant placeholder="Example: Book Thriller Science-Fiction" />
 
-    <label for="link">Link</label>
+    <label for="location">Location</label>
+    <input id="location" name="location" ng-model="stuff.location" ng-model-instant placeholder="Default: {{profile.location || 'Your Profile Location (go to My Account)'}}" />
+
+    <label for="link">Link Url</label>
     <input id="link" name="link" ng-model="stuff.link" ng-model-instant/>
 
-    <label for="image">Image</label>
+    <label for="image">Image Url</label>
     <input id="image" name="image" ng-model="stuff.image" ng-model-instant/>
 
     <label>Sharing Type</label>

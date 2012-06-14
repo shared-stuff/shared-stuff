@@ -10,6 +10,10 @@
             <td><label>eMail</label></td>
             <td><a href="mailto:{{profile.email}}">{{profile.email}}</a></td>
         </tr>
+        <tr ng-show="profile.location">
+            <td><label>Location</label></td>
+            <td>{{profile.location}}</a></td>
+        </tr>
         <tr ng-show="friend.userAddress">
             <td><label>Remote Storage ID</label></td>
             <td>{{friend.userAddress}}</a></td>

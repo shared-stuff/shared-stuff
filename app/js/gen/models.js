@@ -8,7 +8,6 @@
     _results = [];
     for (k in source) {
       v = source[k];
-      utils.log(k);
       if (!(k in target)) {
         _results.push(target[k] = v);
       } else {
@@ -39,6 +38,11 @@
 
     Stuff.prototype.modify = function() {
       return this.modified = new Date().getTime();
+    };
+
+    Stuff.prototype.getLocation = function() {
+      var _ref;
+      return this.location || ((_ref = this.owner) != null ? _ref.location : void 0) || '';
     };
 
     Stuff.sharingTypeValues = ['rent', 'gift', 'use-together'];
@@ -73,6 +77,7 @@
       this.name = props.name || '';
       this.email = props.email || '';
       this.image = props.image || '';
+      this.location = props.location || '';
       copyUnknownProps(props, this);
     }
 
