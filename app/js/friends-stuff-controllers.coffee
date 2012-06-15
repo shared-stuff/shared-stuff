@@ -1,7 +1,7 @@
 log = utils.log
 focus = utils.focus
 
-FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
+FriendsStuffController = ($scope,$timeout,friendDAO,friendsStuffDAO)->
   $scope.stuffList = []
   $scope.filteredStuffList = []
   $scope.sortAttribute = sessionStorage.getItem('friends-stuff-sortAttribute') || '-modified'
@@ -23,7 +23,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
       #if (status == 'LOADED')
         #refreshTimeout = setTimeout(startRefresh,60000)
 
-  $defer ->
+  $timeout ->
       friendsStuffDAO.clearCache()
       startRefresh()
 
@@ -40,7 +40,7 @@ FriendsStuffController = ($scope,$defer,friendDAO,friendsStuffDAO)->
   )
 
 
-FriendsStuffController.$inject = ['$scope','$defer','friendDAO','friendsStuffDAO']
+FriendsStuffController.$inject = ['$scope','$timeout','friendDAO','friendsStuffDAO']
 
 #export
 this.FriendsStuffController = FriendsStuffController

@@ -26,10 +26,10 @@ directive('stuffImage', [->
 ]).
 directive('multiSelect', [->
   {
-    scope: {options: 'accessor', values:'accessor', localizationType:'attribute'}
+    scope: {options: '=', values:'=', localizationType:'@'}
     template: """
             <div class="multiSelect">
-              <span ng-repeat="option in options()">
+              <span ng-repeat="option in options">
                 <label class="checkBoxLabel">
                   <input type="checkbox" ng-model="selected[option]"> {{option | localize:localizationType}}
                 </label>
@@ -37,42 +37,37 @@ directive('multiSelect', [->
             </div>
             """,
     link: ($scope, elm, attrs) ->
-      $scope.$watch('values()', ->
+
+      $scope.$watch('values', ->
         $scope.selected = {}
-        for value in $scope.values()
+        for value in $scope.values
           $scope.selected[value] = true
       )
 
       $scope.$watch('selected', ->
-        $scope.values((option for option,isSelected of $scope.selected when isSelected))
+        $scope.values = (option for option,isSelected of $scope.selected when isSelected)
       ,true)
   }
 ]).
 directive('sharingTypesSelect', [->
   {
-  scope: {values: 'accessor'}
-  template: """<div multi-select options="options" values="values2" localization-type="sharingType"/>""",
+  scope: {values: '='}
+  template: """<div multi-select options="options" values="values" localization-type="sharingType"/>""",
   link: ($scope, elm, attrs) ->
     $scope.options = Stuff.sharingTypeValues
-    $scope.$watch('values()', ->
-      $scope.values2 = $scope.values()
-    ,true)
-    $scope.$watch('values2', ->
-      $scope.values($scope.values2)
-    ,true)
   }
 ]).
 directive('sharingTypes', [->
   {
-  scope: {values: 'accessor'}
+  scope: {values: '='}
   template:"""
-    <span ng-show="values().length">for {{values() | sharingTypes}}</span>
+    <span ng-show="values.length">for {{values | sharingTypes}}</span>
     """
   }
 ]).
 directive('myStuff', [->
   {
-  scope: {item: 'evaluate',profile: 'accessor'}
+  scope: {item: '=',profile: '='}
   template:"""
           <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
           <span stuff-image src="{{item.image}}"/>
@@ -81,7 +76,7 @@ directive('myStuff', [->
               <span ng-show="item.visibility == 'public'" class="owner visibility">Public</span>
               {{item.categories}}
               <span ng-show="item.location">in {{item.getLocation()}}</span>
-              <span ng-show="!item.location && profile().location">in your profile location {{profile().location}}</span>
+              <span ng-show="!item.location && profile.location">in your profile location {{profile.location}}</span>
               <span sharing-types values="item.sharingTypes" />
               <a ng-show="item.link" href="{{item.link}}" target="link">External Link</a>
           </p>
@@ -90,7 +85,7 @@ directive('myStuff', [->
 ]).
 directive('friendStuff', [->
   {
-  scope: {item: 'evaluate'}
+  scope: {item: '='}
   template:"""
           <h3>{{item.title || "Untitled"}}</h3>
             <span stuff-image src="{{item.image}}"/>

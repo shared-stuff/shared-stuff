@@ -5,7 +5,7 @@
 
   focus = utils.focus;
 
-  FriendsStuffController = function($scope, $defer, friendDAO, friendsStuffDAO) {
+  FriendsStuffController = function($scope, $timeout, friendDAO, friendsStuffDAO) {
     var filterStuffList, refreshTimeout, startRefresh;
     $scope.stuffList = [];
     $scope.filteredStuffList = [];
@@ -29,7 +29,7 @@
         return $scope.$digest();
       });
     };
-    $defer(function() {
+    $timeout(function() {
       friendsStuffDAO.clearCache();
       return startRefresh();
     });
@@ -44,7 +44,7 @@
     });
   };
 
-  FriendsStuffController.$inject = ['$scope', '$defer', 'friendDAO', 'friendsStuffDAO'];
+  FriendsStuffController.$inject = ['$scope', '$timeout', 'friendDAO', 'friendsStuffDAO'];
 
   this.FriendsStuffController = FriendsStuffController;
 
