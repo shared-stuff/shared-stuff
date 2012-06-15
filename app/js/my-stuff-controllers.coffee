@@ -15,6 +15,7 @@ MyStuffController = ($scope, stuffDAO,profileDAO)->
   $scope.circles = circles
   $scope.sortAttribute = sessionStorage.getItem('my-stuff-sortAttribute') || '-modified'
   $scope.sortAttributeNames = {'-modified':'Newest','title':'Title','owner.name':'Friend'}
+  $scope.sharingDirections = Stuff.sharingDirectionValues
 
   profileDAO.load (profile) ->
     $scope.profile = profile
@@ -58,6 +59,7 @@ MyStuffController.$inject = ['$scope', 'stuffDAO','profileDAO']
 MyStuffEditController = ($scope, stuffDAO,profileDAO, $routeParams, $location)->
   $scope.stuff = new Stuff()
   $scope.circles = circles
+  $scope.sharingDirections = Stuff.sharingDirectionValues
 
   profileDAO.load (profile) ->
     $scope.profile = profile

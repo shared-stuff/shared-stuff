@@ -8,6 +8,18 @@
         <li><a ng-click="sortBy('owner.name')">Friend</a></li>
     </ul>
 </div>
+
+<div class="btn-group rightHeaderButtons">
+    <a class="btn dropdown-toggle" data-toggle="dropdown" href="#">
+        Search in {{sharingDirectionNames[sharingDirection]}} <span class="caret"></span>
+    </a>
+    <ul class="dropdown-menu">
+        <li><a ng-click="setSharingDirection('giveAndWish')">Give & Wish</a></li>
+        <li><a ng-click="setSharingDirection('give')">Give</a></li>
+        <li><a ng-click="setSharingDirection('wish')">Wish</a></li>
+    </ul>
+</div>
+
 <h2>Friends' Stuff</h2>
 
 <img src="img/loading.gif" alt="Loading..." ng-show="status=='LOADING'">

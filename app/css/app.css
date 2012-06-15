@@ -64,6 +64,11 @@ h2 {
     display: none;
 }
 
+
+.floatLeft {
+    float: left;
+}
+
 /* Top Nav Bar*/
 
 .navbar-inner {
@@ -118,6 +123,9 @@ h2 {
 
 .stuffImageBox {
     /* float: left;*/
+    display: block;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }
 
 .stuffImageBox img{
@@ -126,6 +134,9 @@ h2 {
     border-radius: 5px;
 }
 
+.wish {
+    font-style: italic;
+}
 
 /* Left Menu */
 
@@ -140,6 +151,10 @@ h2 {
 }
 
 /* Forms */
+
+.btn-group .active {
+    font-weight: bold;
+}
 
 .multiSelect {
     margin-bottom: 0.8em;
@@ -157,12 +172,23 @@ label.checkBoxLabel::after {
     content: ""
 }
 
-input[type="checkbox"] {
+input[type="checkbox"],
+input[type="radio"] {
     display: inline;
+}
+
+input[type="radio"] {
+    margin-right: 3px;
 }
 
 label.checkBoxLabel {
     display: inline;
+    margin-right: 0.5em;
+}
+
+label.checkBoxLabel input{
+    top: -2px;
+    position: relative;
 }
 
 .error {
@@ -202,6 +228,18 @@ input {
 
 .urlDisplay {
     font-size: 0.9em;
+}
+
+/* Stuff Form*/
+
+.stuffForm label{
+    margin-top: 0.5em;
+}
+
+.sharingDirectionSelector {
+    float: left;
+    margin-right: 2em;
+    width: 22em;
 }
 
 /* Login Form */

@@ -13,6 +13,7 @@ class Stuff
     @visibility = props.visibility || 'friends'
     # Stuff.sharingTypeValues
     @sharingTypes = props.sharingTypes || ['rent']
+    @sharingDirection = props.sharingDirection || 'give'
     @categories = props.categories || ''
     @link = props.link || ''
     @image = props.image || ''
@@ -29,6 +30,7 @@ class Stuff
   getLocation: -> @location || @owner?.location || ''
 
   Stuff.sharingTypeValues = ['rent','gift','use-together']
+  Stuff.sharingDirectionValues = ['give','wish']
 
 
 class Friend

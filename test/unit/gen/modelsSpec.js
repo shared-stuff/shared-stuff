@@ -18,6 +18,7 @@
       expect(stuff.description).toEqual('');
       expect(stuff.visibility).toEqual('friends');
       expect(stuff.sharingTypes).toEqual(['rent']);
+      expect(stuff.sharingDirection).toEqual('give');
       expect(stuff.categories).toEqual('');
       expect(stuff.link).toEqual('');
       expect(stuff.image).toEqual('');

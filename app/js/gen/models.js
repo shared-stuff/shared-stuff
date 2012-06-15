@@ -26,6 +26,7 @@
       this.description = props.description || '';
       this.visibility = props.visibility || 'friends';
       this.sharingTypes = props.sharingTypes || ['rent'];
+      this.sharingDirection = props.sharingDirection || 'give';
       this.categories = props.categories || '';
       this.link = props.link || '';
       this.image = props.image || '';
@@ -46,6 +47,8 @@
     };
 
     Stuff.sharingTypeValues = ['rent', 'gift', 'use-together'];
+
+    Stuff.sharingDirectionValues = ['give', 'wish'];
 
     return Stuff;
 

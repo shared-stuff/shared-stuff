@@ -69,7 +69,7 @@ directive('myStuff', [->
   {
   scope: {item: '=',profile: '='}
   template:"""
-          <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a></h3>
+          <h3><a href="#/mystuff/{{item.id}}">{{item.title || "Untitled"}}</a><span class="wish" ng-show="item.sharingDirection=='wish'"> [Wish]</span></h3>
           <span stuff-image src="{{item.image}}"/>
           <p class="description" ng-bind-html="item.description | urlize"></p>
           <p class="stuffFooter">
@@ -87,7 +87,7 @@ directive('friendStuff', [->
   {
   scope: {item: '='}
   template:"""
-          <h3>{{item.title || "Untitled"}}</h3>
+          <h3>{{item.title || "Untitled"}}<span class="wish" ng-show="item.sharingDirection=='wish'"> [Wish]</span></h3>
             <span stuff-image src="{{item.image}}"/>
             <p class="description" ng-bind-html="item.description | urlize"></p>
             <p class="stuffFooter">

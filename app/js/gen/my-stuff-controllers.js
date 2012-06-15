@@ -24,6 +24,7 @@
       'title': 'Title',
       'owner.name': 'Friend'
     };
+    $scope.sharingDirections = Stuff.sharingDirectionValues;
     profileDAO.load(function(profile) {
       $scope.profile = profile;
       return $scope.$digest();
@@ -71,6 +72,7 @@
     var redirectToList;
     $scope.stuff = new Stuff();
     $scope.circles = circles;
+    $scope.sharingDirections = Stuff.sharingDirectionValues;
     profileDAO.load(function(profile) {
       $scope.profile = profile;
       return $scope.$digest();

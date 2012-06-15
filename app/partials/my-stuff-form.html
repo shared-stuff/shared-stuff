@@ -1,4 +1,4 @@
-<form name="itemForm" class="itemForm">
+<form name="itemForm" class="itemForm stuffForm">
     <label for="title">Title</label>
     <input id="title" name="title" ng-model="stuff.title" ng-model-instant autofocus="autofocus" required/>
 
@@ -19,9 +19,19 @@
     <label for="image">Image Url</label>
     <input id="image" name="image" ng-model="stuff.image" ng-model-instant/>
 
-    <label>Sharing Type</label>
-    <div sharing-types-select values="stuff.sharingTypes" />
+    <div class="clearfix">
+        <div class="sharingDirectionSelector">
+            <label>Sharing Direction</label>
+            <label class="checkBoxLabel"><input type="radio" ng-model="stuff.sharingDirection" value="give" >Give</label>
+            <label class="checkBoxLabel"><input type="radio" ng-model="stuff.sharingDirection" value="wish" >Wish</label>
+        </div>
 
-    <label for="description">Visibility</label>
+        <div class="">
+            <label>Sharing Type</label>
+            <div sharing-types-select values="stuff.sharingTypes" />
+        </div>
+    </div>
+
+    <label class="clearLeft" for="description">Visibility</label>
     <select id="visibility" ng-options="key as value for (key , value) in circles" ng-model="stuff.visibility"></select>
 </form>
