@@ -10,7 +10,7 @@
   };
 
   circles = {
-    friends: 'Friends',
+    friends: 'Friends (Secret)',
     'public': 'Public'
   };
 

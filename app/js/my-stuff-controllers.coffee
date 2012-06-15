@@ -5,7 +5,7 @@ isValid = (stuff)-> !utils.isBlank(stuff.title)
 
 
 circles = {
-  friends: 'Friends',
+  friends: 'Friends (Secret)',
   'public': 'Public'
 }
 
