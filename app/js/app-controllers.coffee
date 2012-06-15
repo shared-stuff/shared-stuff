@@ -57,9 +57,9 @@ AppController = ($scope,$location)->
         }
         applyIfNeeded($scope, -> $scope.isAppLoaded = true)
       onRouteChange()
-      $scope.$on('$beforeRouteChange', onRouteChange)
+      $scope.$on('$routeChangeStart', onRouteChange)
   else
-    $scope.$on('$beforeRouteChange', onRouteChange)
+    $scope.$on('$routeChangeStart', onRouteChange)
     $scope.isAppLoaded = true
 
 AppController.needsUserLoggedIn = needsUserLoggedIn;

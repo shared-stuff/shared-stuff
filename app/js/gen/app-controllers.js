@@ -70,10 +70,10 @@
           });
         }
         onRouteChange();
-        return $scope.$on('$beforeRouteChange', onRouteChange);
+        return $scope.$on('$routeChangeStart', onRouteChange);
       });
     } else {
-      $scope.$on('$beforeRouteChange', onRouteChange);
+      $scope.$on('$routeChangeStart', onRouteChange);
       return $scope.isAppLoaded = true;
     }
   };
