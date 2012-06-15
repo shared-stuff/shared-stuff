@@ -230,6 +230,10 @@ input {
     font-size: 0.9em;
 }
 
+.collapseSection{
+    margin-top: 0.5em;
+}
+
 /* Stuff Form*/
 
 .stuffForm label{
