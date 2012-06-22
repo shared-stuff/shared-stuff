@@ -1,5 +1,5 @@
 (function() {
-  var createRemoteStorageUtilsMock, defer, log;
+  var PublicRemoteStorageServiceMock, createRemoteStorageUtilsMock, defer, log;
 
   defer = utils.defer;
 
@@ -62,9 +62,9 @@
       rsDAO.list(function(itemsResultArg) {
         return items = itemsResultArg;
       });
-      waitsFor(function() {
+      waitsFor((function() {
         return items;
-      }, "Retrived Items", 1000);
+      }), "Retrieved Items", 100);
       return runs(function() {
         expect(items.length).toEqual(1);
         return expect(items[0].userAddress).toEqual('username@host.org');
@@ -89,9 +89,9 @@
       rsDAO.list(function(itemsResultArg) {
         return items = itemsResultArg;
       });
-      waitsFor(function() {
+      waitsFor((function() {
         return items;
-      }, "Retrived Items", 1000);
+      }), "Retrieved Items", 100);
       return runs(function() {
         expect(items.length).toEqual(1);
         return expect(items[0].name).toEqual('username@host.org');
@@ -114,9 +114,9 @@
       }, function(itemsResultArg) {
         return saved = true;
       });
-      waitsFor(function() {
+      waitsFor((function() {
         return saved;
-      }, "Saving", 1000);
+      }), "Saving", 100);
       return runs(function() {
         var items;
         items = remoteStorageUtilsMock.getItemObjectSync(rsCategory, rsKey).items;
@@ -145,7 +145,7 @@
       });
       waitsFor((function() {
         return foundItem;
-      }), "Saving", 1000);
+      }), "Saving", 100);
       return runs(function() {
         var items;
         items = remoteStorageUtilsMock.getItemObjectSync(rsCategory, rsKey).items;
@@ -190,9 +190,9 @@
       myStuffDAO.list(function(itemsResultArg) {
         return items = itemsResultArg;
       });
-      waitsFor(function() {
+      waitsFor((function() {
         return items;
-      }, "Retrived Items", 1000);
+      }), "Retrieved Items", 100);
       return runs(function() {
         expect(items.length).toEqual(2);
         expect(items[0].title).toEqual('Stuff Title 1');
@@ -211,7 +211,7 @@
       });
       waitsFor(function() {
         return saved && remoteStorageUtilsMock.getItemObjectSync('public', 'sharedstuff-secret') && remoteStorageUtilsMock.getItemObjectSync('public', 'sharedstuff-public');
-      }, "Saving", 1000);
+      }, "Saving", 100);
       return runs(function() {
         var items, itemsForFriends;
         items = remoteStorageUtilsMock.getItemObjectSync(rsCategory, rsKey).items;
@@ -225,6 +225,82 @@
         itemsForFriends = remoteStorageUtilsMock.getItemObjectSync('public', 'sharedstuff-public').items;
         expect(itemsForFriends.length).toEqual(1);
         return expect(itemsForFriends[0].title).toEqual('Stuff Title 2.1');
+      });
+    });
+  });
+
+  PublicRemoteStorageServiceMock = (function() {
+
+    function PublicRemoteStorageServiceMock(dummyValueCache, dummyValueFresh, dummyStatus) {
+      this.dummyValueCache = dummyValueCache;
+      this.dummyValueFresh = dummyValueFresh;
+      this.dummyStatus = dummyStatus;
+    }
+
+    PublicRemoteStorageServiceMock.prototype.get = function(userAddress, key, defaultValue, callback) {
+      return callback(this.dummyValueCache, this.dummyStatus);
+    };
+
+    PublicRemoteStorageServiceMock.prototype.refresh = function(userAddress, key, defaultValue, callback) {
+      return callback(this.dummyValueFresh, this.dummyStatus);
+    };
+
+    return PublicRemoteStorageServiceMock;
+
+  })();
+
+  describe('ProfileDAO', function() {
+    var dummyCacheTime, friend, profileDAO, publicRemoteStorageService;
+    publicRemoteStorageService = void 0;
+    profileDAO = void 0;
+    friend = new Friend({
+      userAddress: 'user@host.org'
+    });
+    dummyCacheTime = 123;
+    beforeEach(function() {
+      publicRemoteStorageService = new PublicRemoteStorageServiceMock({
+        name: 'cachedName'
+      }, {
+        name: 'freshName'
+      }, {
+        cacheTime: dummyCacheTime
+      });
+      profileDAO = new ProfileDAO(publicRemoteStorageService);
+      spyOn(publicRemoteStorageService, 'get').andCallThrough();
+      return spyOn(publicRemoteStorageService, 'refresh').andCallThrough();
+    });
+    it('should normally return a cached profile', function() {
+      var cacheTime, profile;
+      profile = void 0;
+      cacheTime = void 0;
+      profileDAO.getByFriend(friend, function(profileResult, status) {
+        profile = profileResult;
+        return cacheTime = status.cacheTime;
+      });
+      waitsFor((function() {
+        return profile;
+      }), "Load Profile", 100);
+      return runs(function() {
+        expect(profile.name).toEqual('cachedName');
+        expect(cacheTime).toEqual(dummyCacheTime);
+        return expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+      });
+    });
+    return it('should return a refreshed profile on request', function() {
+      var cacheTime, profile;
+      profile = void 0;
+      cacheTime = void 0;
+      profileDAO.getByFriendRefreshed(friend, function(profileResult, status) {
+        profile = profileResult;
+        return cacheTime = status.cacheTime;
+      });
+      waitsFor((function() {
+        return profile;
+      }), "Load Fresh Profile", 100);
+      return runs(function() {
+        expect(profile.name).toEqual('freshName');
+        expect(cacheTime).toEqual(dummyCacheTime);
+        return expect(publicRemoteStorageService.refresh).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
       });
     });
   });

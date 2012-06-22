@@ -7,6 +7,9 @@ filterByDirection = (stuffList, sharingDirection) ->
   else
     return (stuff for stuff in stuffList when stuff.sharingDirection == sharingDirection)
 
+
+CACHE_AGE_THRESHOLD = 10*1000
+
 FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
   $scope.stuffList = []
   $scope.filteredStuffList = []
@@ -15,27 +18,28 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
   $scope.sharingDirection = sessionStorage.getItem('friends-stuff-sharingDirection') || 'giveAndWish'
   $scope.sharingDirectionNames = {'giveAndWish': 'Give & Wish', 'give': 'Give', 'wish': 'Wish'}
   $scope.status = "LOADING"
-  refreshTimeout = undefined
+  updateTimeout = undefined
+  updateCountdown = 0
 
   filterStuffList = ->
     filteredByDirection = filterByDirection($scope.stuffList, $scope.sharingDirection)
     $scope.filteredStuffList = utils.search(filteredByDirection, $scope.searchQuery)
 
-  startRefresh = ->
-    friendsStuffDAO.list (stuffList, status)->
-      $scope.stuffList = stuffList
-      if $scope.status != "LOADED"
-        $scope.status = status
-      filterStuffList()
-      ;
-      $scope.$digest()
-      ;
-  #if (status == 'LOADED')
-  #refreshTimeout = setTimeout(startRefresh,60000)
+  update = ->
+    updateCountdown -= 1
+    friendsStuffDAO.refreshMostOutdatedFriend(CACHE_AGE_THRESHOLD,onUpdateStuffList)
 
-  $timeout ->
-    friendsStuffDAO.clearCache()
-    startRefresh()
+  onUpdateStuffList = (friends,stuffList, status) ->
+    $scope.stuffList = stuffList
+    if $scope.status != "LOADED"
+      # status change to LOADED
+      $scope.status = status
+      if status == "LOADED"
+        updateCountdown = friends.length
+    filterStuffList()
+    $scope.$digest()
+    if (status == 'LOADED' && updateCountdown>0)
+      updateTimeout = setTimeout(update,1000)
 
   $scope.sortBy = (sortAttribute) ->
     sessionStorage.setItem('friends-stuff-sortAttribute', sortAttribute)
@@ -49,10 +53,15 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
   $scope.$watch('sharingDirection', filterStuffList)
 
   $scope.$on('$destroy', ->
-    if refreshTimeout
-      clearTimeout(refreshTimeout)
-    log("destroyed FriendsStuffController")
+    log("FriendsStuffController is destroyed")
+    if updateTimeout
+      clearTimeout(updateTimeout)
+      updateCountdown = 0
+      log("Stopped Refresh")
   )
+
+  friendsStuffDAO.clearCache()
+  friendsStuffDAO.list(onUpdateStuffList)
 
 
 FriendsStuffController.$inject = ['$scope', '$timeout', 'friendDAO', 'friendsStuffDAO']

@@ -1,6 +1,6 @@
 (function() {
   'use strict';
-  var FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, log, randomString, rs, wrapIdentity,
+  var CacheItemWrapper, FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getCurrentTime, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, isOlderThan, log, randomString, rs, wrapIdentity,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
@@ -15,6 +15,10 @@
   randomString = utils.randomString;
 
   defer = utils.defer;
+
+  getCurrentTime = utils.getCurrentTime;
+
+  isOlderThan = utils.isOlderThan;
 
   RS_CATEGORY = "sharedstuff";
 
@@ -284,8 +288,16 @@
     };
 
     ProfileDAO.prototype.getByFriend = function(friend, callback) {
-      return this.publicRemoteStorageService.get(friend.userAddress, this.key, {}, function(result) {
-        return callback(new Profile(result));
+      return this._getByFriend('get', friend, callback);
+    };
+
+    ProfileDAO.prototype.getByFriendRefreshed = function(friend, callback) {
+      return this._getByFriend('refresh', friend, callback);
+    };
+
+    ProfileDAO.prototype._getByFriend = function(getMethod, friend, callback) {
+      return this.publicRemoteStorageService[getMethod](friend.userAddress, this.key, {}, function(result, status) {
+        return callback(new Profile(result), status);
       });
     };
 
@@ -293,24 +305,43 @@
 
   })();
 
+  CacheItemWrapper = (function() {
+
+    function CacheItemWrapper(time, data) {
+      this.time = time;
+      this.data = data;
+    }
+
+    return CacheItemWrapper;
+
+  })();
+
   PublicRemoteStorageService = (function() {
 
-    function PublicRemoteStorageService(remoteStorage, localStorage) {
+    function PublicRemoteStorageService(remoteStorage, localStorage, getTime) {
       this.remoteStorage = remoteStorage;
       this.localStorage = localStorage;
+      this.getTime = getTime != null ? getTime : getCurrentTime;
       this.clientByUserAddress = {};
     }
 
     PublicRemoteStorageService.prototype.get = function(userAddress, key, defaultValue, callback) {
-      var cachedData;
+      var cachedData, cachedWrapper;
       if (!userAddress) {
         log("Missing UserAdress!");
-        callback(defaultValue);
+        callback(defaultValue, {
+          error: "Missing UserAddress",
+          cacheTime: self.getTime()
+        });
         return;
       }
       cachedData = this.localStorage.getItem(this.localStorageKey(userAddress, key));
       if (cachedData) {
-        return callback(JSON.parse(cachedData));
+        log("Loading " + userAddress + ":" + key + " from cache");
+        cachedWrapper = JSON.parse(cachedData);
+        return callback(cachedWrapper.data, {
+          cacheTime: cachedWrapper.time
+        });
       } else {
         return this._refresh(userAddress, key, defaultValue, callback);
       }
@@ -321,7 +352,10 @@
         return this._refresh(userAddress, key, defaultValue, callback);
       } else {
         log("Missing UserAdress!");
-        return callback(defaultValue);
+        return callback(defaultValue, {
+          error: "Missing UserAddress",
+          cacheTime: self.getTime()
+        });
       }
     };
 
@@ -329,38 +363,47 @@
       var self;
       self = this;
       if (this.clientByUserAddress[userAddress]) {
-        this.getByClient(userAddress, this.clientByUserAddress[userAddress], key, defaultValue, callback);
+        return this.getByClient(userAddress, this.clientByUserAddress[userAddress], key, defaultValue, callback);
       } else {
-
+        return self.remoteStorage.getStorageInfo(userAddress, function(error, storageInfo) {
+          var client;
+          if (storageInfo) {
+            client = self.remoteStorage.createClient(storageInfo, 'public');
+            self.clientByUserAddress[userAddress] = client;
+            return self.getByClient(userAddress, client, key, defaultValue, callback);
+          } else {
+            log(error);
+            return callback(defaultValue, {
+              error: error,
+              cacheTime: self.getTime()
+            });
+          }
+        });
       }
-      return self.remoteStorage.getStorageInfo(userAddress, function(error, storageInfo) {
-        var client;
-        if (storageInfo) {
-          client = self.remoteStorage.createClient(storageInfo, 'public');
-          self.clientByUserAddress[userAddress] = client;
-          return self.getByClient(userAddress, client, key, defaultValue, callback);
-        } else {
-          log(error);
-          return callback(defaultValue, error);
-        }
-      });
     };
 
     PublicRemoteStorageService.prototype.getByClient = function(userAddress, client, key, defaultValue, callback) {
       var self;
       self = this;
-      return client.get(key, function(err, data) {
-        if (data) {
-          self.cacheInLocalStorage(userAddress, key, data);
-          return callback(JSON.parse(data));
+      return client.get(key, function(err, dataJsonString) {
+        var currentTime, data;
+        currentTime = self.getTime();
+        if (dataJsonString) {
+          data = JSON.parse(dataJsonString);
+          self.cacheInLocalStorage(userAddress, key, new CacheItemWrapper(currentTime, data));
+          return callback(data, {
+            cacheTime: currentTime
+          });
         } else {
-          return callback(defaultValue);
+          return callback(defaultValue, {
+            cacheTime: currentTime
+          });
         }
       });
     };
 
-    PublicRemoteStorageService.prototype.cacheInLocalStorage = function(userAddress, key, valueAsJsonString) {
-      return this.localStorage.setItem(this.localStorageKey(userAddress, key), valueAsJsonString);
+    PublicRemoteStorageService.prototype.cacheInLocalStorage = function(userAddress, key, cacheItemWrapper) {
+      return this.localStorage.setItem(this.localStorageKey(userAddress, key), JSON.stringify(cacheItemWrapper));
     };
 
     PublicRemoteStorageService.prototype.localStorageKey = function(userAddress, key) {
@@ -382,21 +425,49 @@
       this.publicRemoteStorageDAO = publicRemoteStorageDAO;
       this.profileDAO = profileDAO;
       this.friendsStuffList = [];
+      this.cacheTimeByFriendID = {};
+      this.friends = [];
     }
 
-    FriendsStuffDAO.prototype.listStuffByFriend = function(friend, callback) {
-      var self;
+    FriendsStuffDAO.prototype.listStuffByFriend = function(friend, callback, refreshed) {
+      var getProfileMethod, self;
+      if (refreshed == null) refreshed = false;
       self = this;
-      return this.profileDAO.getByFriend(friend, function(profile) {
+      getProfileMethod = refreshed ? 'getByFriendRefreshed' : 'getByFriend';
+      return this.profileDAO[getProfileMethod](friend, function(profile, profileStatus) {
+        var getStuffMethod;
         friend.location = profile.location;
-        return self.publicRemoteStorageDAO.get(friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer) {
+        getStuffMethod = refreshed ? 'refresh' : 'get';
+        return self.publicRemoteStorageDAO[getStuffMethod](friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer, stuffStatus) {
+          log("Got Stuff for " + friend.name);
           return callback(getItemsFromContainer(itemContainer, function(item) {
             item = new Stuff(item);
             item.owner = friend;
             return item;
-          }));
+          }), Math.min(profileStatus.cacheTime, stuffStatus.cacheTime));
         });
       });
+    };
+
+    FriendsStuffDAO.prototype.listStuffByFriendRefreshed = function(friend, callback) {
+      return this.listStuffByFriend(friend, callback, true);
+    };
+
+    FriendsStuffDAO.prototype.refreshMostOutdatedFriend = function(ageThreshold, callback) {
+      var cacheTimeByFriendID, mostOutdatedFriend, self;
+      self = this;
+      cacheTimeByFriendID = this.cacheTimeByFriendID;
+      mostOutdatedFriend = _.min(this.friends, function(friend) {
+        return cacheTimeByFriendID[friend.id] || 0;
+      });
+      if (isOlderThan(cacheTimeByFriendID[mostOutdatedFriend.id], ageThreshold)) {
+        return self.listStuffByFriend(mostOutdatedFriend, function(friendStuff, cacheTime) {
+          log("Updating " + mostOutdatedFriend.name);
+          self._updateWithLoadedItems(friendStuff);
+          self.cacheTimeByFriendID[mostOutdatedFriend.id] = cacheTime;
+          return callback(self.friends, self.friendsStuffList, 'LOADED');
+        }, true);
+      }
     };
 
     FriendsStuffDAO.prototype.validateFriend = function(friend, callback) {
@@ -436,15 +507,19 @@
       self = this;
       return this.friendDAO.list(function(friends) {
         var friend, loadedCounter, _i, _len, _results;
+        self.friends = friends;
         loadedCounter = 0;
-        if (friends.length === 0) callback(self.friendsStuffList, 'NO_FRIENDS');
+        if (friends.length === 0) {
+          callback(self.friends, self.friendsStuffList, 'NO_FRIENDS');
+        }
         _results = [];
         for (_i = 0, _len = friends.length; _i < _len; _i++) {
           friend = friends[_i];
-          _results.push(self.listStuffByFriend(friend, function(friendStuff) {
+          _results.push(self.listStuffByFriend(friend, function(friendStuff, cacheTime) {
             self._updateWithLoadedItems(friendStuff);
+            self.cacheTimeByFriendID[friend.id] = cacheTime;
             loadedCounter++;
-            return callback(self.friendsStuffList, loadedCounter === friends.length ? 'LOADED' : 'LOADING');
+            return callback(self.friends, self.friendsStuffList, loadedCounter === friends.length ? 'LOADED' : 'LOADING');
           }));
         }
         return _results;
@@ -493,6 +568,10 @@
 
   this.MyStuffDAO = MyStuffDAO;
 
+  this.ProfileDAO = ProfileDAO;
+
   this.PublicRemoteStorageService = PublicRemoteStorageService;
+
+  this.FriendsStuffDAO = FriendsStuffDAO;
 
 }).call(this);

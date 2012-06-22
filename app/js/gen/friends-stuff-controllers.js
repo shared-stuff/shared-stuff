@@ -1,5 +1,5 @@
 (function() {
-  var FriendsStuffController, filterByDirection, focus, log;
+  var CACHE_AGE_THRESHOLD, FriendsStuffController, filterByDirection, focus, log;
 
   log = utils.log;
 
@@ -22,8 +22,10 @@
     }
   };
 
+  CACHE_AGE_THRESHOLD = 10 * 1000;
+
   FriendsStuffController = function($scope, $timeout, friendDAO, friendsStuffDAO) {
-    var filterStuffList, refreshTimeout, startRefresh;
+    var filterStuffList, onUpdateStuffList, update, updateCountdown, updateTimeout;
     $scope.stuffList = [];
     $scope.filteredStuffList = [];
     $scope.sortAttribute = sessionStorage.getItem('friends-stuff-sortAttribute') || '-modified';
@@ -39,24 +41,29 @@
       'wish': 'Wish'
     };
     $scope.status = "LOADING";
-    refreshTimeout = void 0;
+    updateTimeout = void 0;
+    updateCountdown = 0;
     filterStuffList = function() {
       var filteredByDirection;
       filteredByDirection = filterByDirection($scope.stuffList, $scope.sharingDirection);
       return $scope.filteredStuffList = utils.search(filteredByDirection, $scope.searchQuery);
     };
-    startRefresh = function() {
-      return friendsStuffDAO.list(function(stuffList, status) {
-        $scope.stuffList = stuffList;
-        if ($scope.status !== "LOADED") $scope.status = status;
-        filterStuffList();
-        return $scope.$digest();
-      });
+    update = function() {
+      updateCountdown -= 1;
+      return friendsStuffDAO.refreshMostOutdatedFriend(CACHE_AGE_THRESHOLD, onUpdateStuffList);
     };
-    $timeout(function() {
-      friendsStuffDAO.clearCache();
-      return startRefresh();
-    });
+    onUpdateStuffList = function(friends, stuffList, status) {
+      $scope.stuffList = stuffList;
+      if ($scope.status !== "LOADED") {
+        $scope.status = status;
+        if (status === "LOADED") updateCountdown = friends.length;
+      }
+      filterStuffList();
+      $scope.$digest();
+      if (status === 'LOADED' && updateCountdown > 0) {
+        return updateTimeout = setTimeout(update, 1000);
+      }
+    };
     $scope.sortBy = function(sortAttribute) {
       sessionStorage.setItem('friends-stuff-sortAttribute', sortAttribute);
       return $scope.sortAttribute = sortAttribute;
@@ -67,10 +74,16 @@
     };
     $scope.$watch('searchQuery', filterStuffList);
     $scope.$watch('sharingDirection', filterStuffList);
-    return $scope.$on('$destroy', function() {
-      if (refreshTimeout) clearTimeout(refreshTimeout);
-      return log("destroyed FriendsStuffController");
+    $scope.$on('$destroy', function() {
+      log("FriendsStuffController is destroyed");
+      if (updateTimeout) {
+        clearTimeout(updateTimeout);
+        updateCountdown = 0;
+        return log("Stopped Refresh");
+      }
     });
+    friendsStuffDAO.clearCache();
+    return friendsStuffDAO.list(onUpdateStuffList);
   };
 
   FriendsStuffController.$inject = ['$scope', '$timeout', 'friendDAO', 'friendsStuffDAO'];

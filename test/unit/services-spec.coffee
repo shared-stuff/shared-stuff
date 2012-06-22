@@ -28,57 +28,81 @@ class LocalStorageMock
 describe('PublicRemoteStorageService', ->
   remoteStorageMock = undefined
   localStorageMock = undefined
+  service = undefined
+  getTime = -> 123
 
   beforeEach ->
     remoteStorageMock = new RemoteStorageMock()
     localStorageMock = new LocalStorageMock()
+    service = new PublicRemoteStorageService(remoteStorageMock,localStorageMock,getTime)
+    spyOn(remoteStorageMock,'getStorageInfo').andCallThrough()
 
 
   it('should return results from remoteStorage and store them in localStorage', ->
     remoteStorageMock.setPublicItem('user@host.com','key','value')
-    service = new PublicRemoteStorageService(remoteStorageMock,localStorageMock)
 
     result = undefined
-    service.get('user@host.com','key','defaultValue', (resultArg)->
+    cacheTime = undefined
+    service.get('user@host.com','key','defaultValue', (resultArg,status)->
       result = resultArg
+      cacheTime = status.cacheTime
     )
 
-    waitsFor(( -> result ),"Retrived Result", 1000)
+    waitsFor(( -> result ),"Retrieved Result", 1000)
 
     runs ->
       expect(result).toEqual('value')
-      expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('"value"')
+      expect(cacheTime).toEqual(getTime())
+      expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('{"time":123,"data":"value"}')
   )
 
   it('should return cached values from localStorage', ->
-    localStorageMock.setItem('remoteStorageCache:user@host.com:public:key','"value"')
-    service = new PublicRemoteStorageService(remoteStorageMock,localStorageMock)
+    localStorageMock.setItem('remoteStorageCache:user@host.com:public:key','{"time":111,"data":"value"}')
 
     result = undefined
-    service.get('user@host.com','key','defaultValue', (resultArg)->
+    cacheTime = undefined
+    service.get('user@host.com','key','defaultValue', (resultArg,status)->
       result = resultArg
+      cacheTime = status.cacheTime
     )
 
-    waitsFor(( -> result ),"Retrived Result", 1000)
+    waitsFor(( -> result ),"Retrieved Result", 100)
 
     runs ->
       expect(result).toEqual('value')
+      expect(cacheTime).toEqual(111)
   )
 
   it('should refresh cached values on request', ->
-    localStorageMock.setItem('remoteStorageCache:user@host.com:public:key','"value"')
+    localStorageMock.setItem('remoteStorageCache:user@host.com:public:key','{"time":111,"data":"value"}')
     remoteStorageMock.setPublicItem('user@host.com','key','newValue')
-    service = new PublicRemoteStorageService(remoteStorageMock,localStorageMock)
 
     result = undefined
     service.refresh('user@host.com','key','defaultValue', (resultArg)->
       result = resultArg
     )
 
-    waitsFor(( -> result ),"Retrived Result", 1000)
+    waitsFor(( -> result ),"Retrieved Result", 100)
 
     runs ->
       expect(result).toEqual('newValue')
+      expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('{"time":123,"data":"newValue"}')
+  )
+
+  it('should cache remoteStorage clients in memory', ->
+    remoteStorageMock.setPublicItem('user@host.com','key','newValue')
+
+    secondResult = undefined
+    service.refresh('user@host.com','key','defaultValue', (result1)->
+      service.refresh('user@host.com','key','defaultValue', (result2)->
+        secondResult = result2
+      )
+    )
+
+    waitsFor(( -> secondResult ),"Retrieved Result", 100)
+
+    runs ->
+      expect(remoteStorageMock.getStorageInfo.calls.length).toEqual(1);
   )
 
 )

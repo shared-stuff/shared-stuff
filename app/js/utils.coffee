@@ -96,6 +96,9 @@ search = (list,query) ->
   else
     return list
 
+getCurrentTime = -> (new Date()).getTime()
+isOlderThan = (time,timeThreshold) -> getCurrentTime()-time > timeThreshold
+
 this.utils =
   log: log
   focus: focus
@@ -107,3 +110,5 @@ this.utils =
   focusAndSelect: focusAndSelect
   applyIfNeeded: applyIfNeeded
   search: search
+  getCurrentTime: getCurrentTime
+  isOlderThan: isOlderThan

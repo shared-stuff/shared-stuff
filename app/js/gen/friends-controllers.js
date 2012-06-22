@@ -98,12 +98,12 @@
       return friendDAO.getItem($routeParams.id, function(friend) {
         $scope.friend = new Friend(friend);
         $scope.$digest();
-        friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
+        friendsStuffDAO.listStuffByFriendRefreshed(friend, function(friendStuff) {
           $scope.stuffList = friendStuff;
           $scope.status = "LOADED";
           return $scope.$digest();
         });
-        return profileDAO.getByFriend(friend, function(profile) {
+        return profileDAO.getByFriendRefreshed(friend, function(profile) {
           $scope.profile = new Profile(profile);
           return $scope.$digest();
         });
@@ -165,7 +165,7 @@
     $scope.existingFriend = void 0;
     $scope.profile = {};
     $scope.status = "LOADING";
-    friendsStuffDAO.listStuffByFriend(friend, function(friendStuff) {
+    friendsStuffDAO.listStuffByFriendRefreshed(friend, function(friendStuff) {
       $scope.stuffList = friendStuff;
       $scope.status = "LOADED";
       return $scope.$digest();
@@ -175,7 +175,7 @@
         return $scope.existingFriend = existingFriendArg;
       });
     }
-    profileDAO.getByFriend(friend, function(profile) {
+    profileDAO.getByFriendRefreshed(friend, function(profile, status) {
       $scope.profile = new Profile(profile);
       if (profile.name) {
         friend.name = profile.name;

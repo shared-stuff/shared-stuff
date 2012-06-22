@@ -22,6 +22,10 @@
 
 <h2>Friends' Stuff</h2>
 
+<div ng-show="stuffList.length>0">
+    <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant/>
+</div>
+
 <img src="img/loading.gif" alt="Loading..." ng-show="status=='LOADING'">
 
 <div class="alert alert-info" ng-show="status == 'NO_FRIENDS'">
@@ -34,10 +38,6 @@
 <div class="alert alert-info" ng-show="status == 'LOADED' && stuffList.length==0">
     It seems that your friends have no stuff. You can change this by
     <a href="#/friends">adding more friends</a> or encourage your friends to add some shared stuff.
-</div>
-
-<div class="" ng-show="status == 'LOADED' && stuffList.length>0">
-    <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant/>
 </div>
 
 <div class="alert alert-info" ng-show="stuffList.length>0 && filteredStuffList.length==0">

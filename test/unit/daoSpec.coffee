@@ -52,10 +52,7 @@ describe('RemoteStorageDAO',->
     rsDAO.list (itemsResultArg) ->
           items = itemsResultArg
 
-    waitsFor( ->
-        items
-      ,"Retrived Items", 1000
-    )
+    waitsFor((-> items),"Retrieved Items", 100)
 
     runs ->
       expect(items.length).toEqual(1)
@@ -76,10 +73,7 @@ describe('RemoteStorageDAO',->
     rsDAO.list (itemsResultArg) ->
       items = itemsResultArg
 
-    waitsFor( ->
-        items
-      ,"Retrived Items", 1000
-    )
+    waitsFor((->items),"Retrieved Items", 100)
 
     runs ->
       expect(items.length).toEqual(1)
@@ -98,10 +92,7 @@ describe('RemoteStorageDAO',->
       saved = true
     )
 
-    waitsFor( ->
-        saved
-      ,"Saving", 1000
-    )
+    waitsFor((->saved),"Saving", 100)
 
     runs ->
       items = remoteStorageUtilsMock.getItemObjectSync(rsCategory,rsKey).items
@@ -124,7 +115,7 @@ describe('RemoteStorageDAO',->
     foundItem = undefined
     rsDAO.getItemBy('userAddress','username2@host.org',(itemResultArg) -> foundItem = itemResultArg)
 
-    waitsFor( (-> foundItem) ,"Saving", 1000)
+    waitsFor( (-> foundItem) ,"Saving", 100)
 
     runs ->
       items = remoteStorageUtilsMock.getItemObjectSync(rsCategory,rsKey).items
@@ -165,10 +156,7 @@ describe('MyStuffDAO',->
     myStuffDAO.list (itemsResultArg) ->
       items = itemsResultArg
 
-    waitsFor( ->
-        items
-      ,"Retrived Items", 1000
-    )
+    waitsFor(( -> items),"Retrieved Items", 100)
 
     runs ->
       expect(items.length).toEqual(2)
@@ -185,7 +173,7 @@ describe('MyStuffDAO',->
     waitsFor( ->
         saved && remoteStorageUtilsMock.getItemObjectSync('public','sharedstuff-secret') &&
           remoteStorageUtilsMock.getItemObjectSync('public','sharedstuff-public')
-      ,"Saving", 1000
+      ,"Saving", 100
     )
 
     runs ->
@@ -205,5 +193,59 @@ describe('MyStuffDAO',->
 
   )
 )
+
+
+class PublicRemoteStorageServiceMock
+  constructor: (@dummyValueCache,@dummyValueFresh,@dummyStatus) ->
+  get: (userAddress,key,defaultValue,callback) -> callback(@dummyValueCache,@dummyStatus)
+  refresh: (userAddress,key,defaultValue,callback) -> callback(@dummyValueFresh,@dummyStatus)
+
+
+describe('ProfileDAO', ->
+  publicRemoteStorageService = undefined
+  profileDAO = undefined
+  friend = new Friend({userAddress: 'user@host.org'})
+  dummyCacheTime = 123
+
+  beforeEach ->
+    publicRemoteStorageService = new PublicRemoteStorageServiceMock({name:'cachedName'},{name: 'freshName'},{cacheTime: dummyCacheTime})
+    profileDAO = new ProfileDAO(publicRemoteStorageService)
+    spyOn(publicRemoteStorageService, 'get').andCallThrough();
+    spyOn(publicRemoteStorageService, 'refresh').andCallThrough();
+
+  it('should normally return a cached profile', ->
+    profile = undefined
+    cacheTime = undefined
+    profileDAO.getByFriend(friend, (profileResult,status)->
+      profile = profileResult
+      cacheTime = status.cacheTime
+    )
+
+    waitsFor( (-> profile), "Load Profile", 100 )
+
+    runs ->
+      expect(profile.name).toEqual('cachedName')
+      expect(cacheTime).toEqual(dummyCacheTime)
+      expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+  )
+
+  it('should return a refreshed profile on request', ->
+    profile = undefined
+    cacheTime = undefined
+    profileDAO.getByFriendRefreshed(friend, (profileResult,status)->
+      profile = profileResult
+      cacheTime = status.cacheTime
+    )
+
+    waitsFor( (-> profile), "Load Fresh Profile", 100 )
+
+    runs ->
+      expect(profile.name).toEqual('freshName')
+      expect(cacheTime).toEqual(dummyCacheTime)
+      expect(publicRemoteStorageService.refresh).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+  )
+
+)
+
 
 
