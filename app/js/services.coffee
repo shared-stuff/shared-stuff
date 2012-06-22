@@ -146,7 +146,7 @@ class SettingsDAO
     )
 
 class ProfileDAO
-  constructor: (@publicRemoteStorageService) ->
+  constructor: (@publicRemoteStorageService,@getTime = getCurrentTime) ->
     @profile = null
     @key = PROFILE_KEY
 
@@ -172,12 +172,23 @@ class ProfileDAO
     @_getByFriend('get',friend,callback)
 
   getByFriendRefreshed: (friend,callback) ->
-    @_getByFriend('refresh',friend,callback)
+    @_getByFriend('getRefreshed',friend,callback)
+
+  getByFriendWithDeferedRefresh: (friend,maxAge,callback) ->
+    self = this
+    @getByFriend(friend, (profile,status)->
+      callback(profile,status)
+      if self.getTime()-status.cacheTime > maxAge
+        log("Update Profile defered")
+        self.getByFriendRefreshed(friend,callback)
+    )
 
   _getByFriend: (getMethod,friend,callback) ->
     @publicRemoteStorageService[getMethod](friend.userAddress,@key,{}, (result,status)->
       callback(new Profile(result),status)
     )
+
+
 
 
 class CacheItemWrapper
@@ -200,7 +211,7 @@ class PublicRemoteStorageService
     else
       @_refresh(userAddress,key,defaultValue,callback)
 
-  refresh: (userAddress,key,defaultValue,callback) ->
+  getRefreshed: (userAddress,key,defaultValue,callback) ->
     if userAddress
       @_refresh(userAddress,key,defaultValue,callback)
     else
@@ -261,19 +272,28 @@ class FriendsStuffDAO
     getProfileMethod = if refreshed then 'getByFriendRefreshed' else 'getByFriend'
     @profileDAO[getProfileMethod](friend, (profile,profileStatus) ->
       friend.location = profile.location
-      getStuffMethod = if refreshed then 'refresh' else 'get'
+      getStuffMethod = if refreshed then 'getRefreshed' else 'get'
       self.publicRemoteStorageDAO[getStuffMethod](friend.userAddress,getFriendStuffKey(friend),[], (itemContainer,stuffStatus)->
         log("Got Stuff for #{friend.name}")
         callback(getItemsFromContainer(itemContainer, (item)->
           item = new Stuff(item)
           item.owner = friend
           return item
-        ),Math.min(profileStatus.cacheTime,stuffStatus.cacheTime))
+        ),{cacheTime: Math.min(profileStatus.cacheTime,stuffStatus.cacheTime)})
       )
     )
 
   listStuffByFriendRefreshed: (friend, callback) ->
     @listStuffByFriend(friend,callback,true)
+
+  listStuffByFriendWithDeferedRefresh: (friend,maxAge,callback) ->
+    self = this
+    @listStuffByFriend(friend, (stuffList,status) ->
+      callback(stuffList,status)
+      if isOlderThan(status.cacheTime,maxAge)
+        log("Update friend's stuff defered")
+        self.listStuffByFriendRefreshed(friend,callback)
+    )
 
   refreshMostOutdatedFriend: (ageThreshold,callback) ->
     self = this
@@ -321,9 +341,9 @@ class FriendsStuffDAO
       if friends.length==0
         callback(self.friends,self.friendsStuffList,'NO_FRIENDS')
       for friend in friends
-        self.listStuffByFriend(friend, (friendStuff,cacheTime) ->
+        self.listStuffByFriend(friend, (friendStuff,status) ->
             self._updateWithLoadedItems(friendStuff)
-            self.cacheTimeByFriendID[friend.id] = cacheTime
+            self.cacheTimeByFriendID[friend.id] = status.cacheTime
             loadedCounter++
             callback(self.friends,self.friendsStuffList,if loadedCounter==friends.length then 'LOADED' else 'LOADING')
         )

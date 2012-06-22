@@ -1,5 +1,5 @@
 (function() {
-  var FriendEditController, FriendViewController, FriendsController, ShareStuffController, applyIfNeeded, buildInviteFriendUrl, buildPublicInviteUrl, focus, focusAndSelect, isBlank, log, showValidationErrors;
+  var FriendEditController, FriendViewController, FriendsController, MAX_CACHE_AGE, ShareStuffController, applyIfNeeded, buildInviteFriendUrl, buildPublicInviteUrl, digestIfNeeded, focus, focusAndSelect, isBlank, log, showValidationErrors;
 
   log = utils.log;
 
@@ -10,6 +10,8 @@
   isBlank = utils.isBlank;
 
   applyIfNeeded = utils.applyIfNeeded;
+
+  digestIfNeeded = utils.digestIfNeeded;
 
   FriendsController = function($scope, friendDAO, friendsStuffDAO, $location, $routeParams) {
     $scope.friendList = [];
@@ -86,6 +88,8 @@
 
   FriendsController.$inject = ['$scope', 'friendDAO', 'friendsStuffDAO', '$location', '$routeParams'];
 
+  MAX_CACHE_AGE = 10 * 1000;
+
   FriendEditController = function($scope, friendDAO, friendsStuffDAO, profileDAO, $routeParams, $location) {
     var loadFriend, redirectToList;
     $scope.friend = new Friend();
@@ -97,15 +101,15 @@
     loadFriend = function() {
       return friendDAO.getItem($routeParams.id, function(friend) {
         $scope.friend = new Friend(friend);
-        $scope.$digest();
-        friendsStuffDAO.listStuffByFriendRefreshed(friend, function(friendStuff) {
+        digestIfNeeded($scope);
+        friendsStuffDAO.listStuffByFriendWithDeferedRefresh(friend, MAX_CACHE_AGE, function(friendStuff) {
           $scope.stuffList = friendStuff;
           $scope.status = "LOADED";
-          return $scope.$digest();
+          return digestIfNeeded($scope);
         });
-        return profileDAO.getByFriendRefreshed(friend, function(profile) {
+        return profileDAO.getByFriendWithDeferedRefresh(friend, MAX_CACHE_AGE, function(profile) {
           $scope.profile = new Profile(profile);
-          return $scope.$digest();
+          return digestIfNeeded($scope);
         });
       });
     };
@@ -165,24 +169,24 @@
     $scope.existingFriend = void 0;
     $scope.profile = {};
     $scope.status = "LOADING";
-    friendsStuffDAO.listStuffByFriendRefreshed(friend, function(friendStuff) {
+    friendsStuffDAO.listStuffByFriendWithDeferedRefresh(friend, MAX_CACHE_AGE, function(friendStuff) {
       $scope.stuffList = friendStuff;
       $scope.status = "LOADED";
-      return $scope.$digest();
+      return digestIfNeeded($scope);
     });
     if ($scope.session.isLoggedIn) {
       friendDAO.getItemBy('userAddress', friend.userAddress, function(existingFriendArg) {
         return $scope.existingFriend = existingFriendArg;
       });
     }
-    profileDAO.getByFriendRefreshed(friend, function(profile, status) {
+    profileDAO.getByFriendWithDeferedRefresh(friend, MAX_CACHE_AGE, function(profile, status) {
       $scope.profile = new Profile(profile);
       if (profile.name) {
         friend.name = profile.name;
       } else {
         friend.name = friend.userAddress.replace(/@.*$/, '') || 'unkown';
       }
-      return $scope.$digest();
+      return digestIfNeeded($scope);
     });
     return $scope.addFriend = function() {
       return $location.path('/addFriend/' + friend.name + '/' + friend.userAddress + '/' + friend.secret);

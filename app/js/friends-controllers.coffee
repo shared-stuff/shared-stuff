@@ -3,7 +3,7 @@ focus = utils.focus
 focusAndSelect = utils.focusAndSelect
 isBlank = utils.isBlank
 applyIfNeeded =  utils.applyIfNeeded
-
+digestIfNeeded = utils.digestIfNeeded
 
 FriendsController = ($scope,friendDAO,friendsStuffDAO,$location,$routeParams)->
   $scope.friendList = []
@@ -74,6 +74,7 @@ buildPublicInviteUrl = (userAddress,secret) ->
 
 FriendsController.$inject = ['$scope','friendDAO','friendsStuffDAO','$location','$routeParams']
 
+MAX_CACHE_AGE = 10*1000;
 
 FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams,$location)->
   $scope.friend = new Friend()
@@ -86,15 +87,15 @@ FriendEditController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   loadFriend = ->
     friendDAO.getItem($routeParams.id,(friend)->
       $scope.friend = new Friend(friend)
-      $scope.$digest()
-      friendsStuffDAO.listStuffByFriendRefreshed(friend, (friendStuff) ->
+      digestIfNeeded($scope)
+      friendsStuffDAO.listStuffByFriendWithDeferedRefresh(friend,MAX_CACHE_AGE, (friendStuff) ->
           $scope.stuffList = friendStuff
           $scope.status = "LOADED"
-          $scope.$digest()
+          digestIfNeeded($scope)
       )
-      profileDAO.getByFriendRefreshed(friend,(profile) ->
+      profileDAO.getByFriendWithDeferedRefresh(friend,MAX_CACHE_AGE,(profile) ->
         $scope.profile = new Profile(profile)
-        $scope.$digest()
+        digestIfNeeded($scope)
       )
     )
 
@@ -147,10 +148,10 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
   $scope.status = "LOADING"
 
 
-  friendsStuffDAO.listStuffByFriendRefreshed(friend, (friendStuff) ->
+  friendsStuffDAO.listStuffByFriendWithDeferedRefresh(friend,MAX_CACHE_AGE, (friendStuff) ->
     $scope.stuffList = friendStuff
     $scope.status = "LOADED"
-    $scope.$digest()
+    digestIfNeeded($scope)
   )
 
   if $scope.session.isLoggedIn
@@ -158,14 +159,13 @@ FriendViewController = ($scope,friendDAO,friendsStuffDAO,profileDAO,$routeParams
       $scope.existingFriend = existingFriendArg
     )
 
-
-  profileDAO.getByFriendRefreshed(friend,(profile,status) ->
+  profileDAO.getByFriendWithDeferedRefresh(friend,MAX_CACHE_AGE,(profile,status) ->
     $scope.profile = new Profile(profile)
     if profile.name
       friend.name = profile.name
     else
       friend.name = friend.userAddress.replace(/@.*$/,'') || 'unkown'
-    $scope.$digest()
+    digestIfNeeded($scope)
   )
 
   $scope.addFriend = ->

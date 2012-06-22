@@ -231,18 +231,23 @@
 
   PublicRemoteStorageServiceMock = (function() {
 
-    function PublicRemoteStorageServiceMock(dummyValueCache, dummyValueFresh, dummyStatus) {
+    function PublicRemoteStorageServiceMock(dummyValueCache, dummyValueFresh, dummyCacheTime, currentTime) {
       this.dummyValueCache = dummyValueCache;
       this.dummyValueFresh = dummyValueFresh;
-      this.dummyStatus = dummyStatus;
+      this.dummyCacheTime = dummyCacheTime;
+      this.currentTime = currentTime;
     }
 
     PublicRemoteStorageServiceMock.prototype.get = function(userAddress, key, defaultValue, callback) {
-      return callback(this.dummyValueCache, this.dummyStatus);
+      return callback(this.dummyValueCache, {
+        cacheTime: this.dummyCacheTime
+      });
     };
 
-    PublicRemoteStorageServiceMock.prototype.refresh = function(userAddress, key, defaultValue, callback) {
-      return callback(this.dummyValueFresh, this.dummyStatus);
+    PublicRemoteStorageServiceMock.prototype.getRefreshed = function(userAddress, key, defaultValue, callback) {
+      return callback(this.dummyValueFresh, {
+        cacheTime: this.currentTime
+      });
     };
 
     return PublicRemoteStorageServiceMock;
@@ -250,24 +255,26 @@
   })();
 
   describe('ProfileDAO', function() {
-    var dummyCacheTime, friend, profileDAO, publicRemoteStorageService;
+    var currentTime, dummyCacheTime, friend, getMockedTime, profileDAO, publicRemoteStorageService;
     publicRemoteStorageService = void 0;
     profileDAO = void 0;
     friend = new Friend({
       userAddress: 'user@host.org'
     });
     dummyCacheTime = 123;
+    currentTime = 200;
+    getMockedTime = function() {
+      return currentTime;
+    };
     beforeEach(function() {
       publicRemoteStorageService = new PublicRemoteStorageServiceMock({
         name: 'cachedName'
       }, {
         name: 'freshName'
-      }, {
-        cacheTime: dummyCacheTime
-      });
-      profileDAO = new ProfileDAO(publicRemoteStorageService);
+      }, dummyCacheTime, currentTime);
+      profileDAO = new ProfileDAO(publicRemoteStorageService, getMockedTime);
       spyOn(publicRemoteStorageService, 'get').andCallThrough();
-      return spyOn(publicRemoteStorageService, 'refresh').andCallThrough();
+      return spyOn(publicRemoteStorageService, 'getRefreshed').andCallThrough();
     });
     it('should normally return a cached profile', function() {
       var cacheTime, profile;
@@ -286,7 +293,7 @@
         return expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
       });
     });
-    return it('should return a refreshed profile on request', function() {
+    it('should return a refreshed profile on request', function() {
       var cacheTime, profile;
       profile = void 0;
       cacheTime = void 0;
@@ -299,8 +306,50 @@
       }), "Load Fresh Profile", 100);
       return runs(function() {
         expect(profile.name).toEqual('freshName');
-        expect(cacheTime).toEqual(dummyCacheTime);
-        return expect(publicRemoteStorageService.refresh).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+        expect(cacheTime).toEqual(currentTime);
+        return expect(publicRemoteStorageService.getRefreshed).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+      });
+    });
+    return describe('getByFriendWithDeferedRefresh', function() {
+      it('should not return a refreshed profile defered if the cached is younger then maxAge', function() {
+        var cacheTime, maxAge, profile;
+        profile = void 0;
+        cacheTime = void 0;
+        maxAge = 200;
+        profileDAO.getByFriendWithDeferedRefresh(friend, maxAge, function(profileResult, status) {
+          profile = profileResult;
+          return cacheTime = status.cacheTime;
+        });
+        waitsFor((function() {
+          return profile;
+        }), "Load Fresh Profile", 100);
+        return runs(function() {
+          expect(profile.name).toEqual('cachedName');
+          expect(cacheTime).toEqual(dummyCacheTime);
+          expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+          return expect(publicRemoteStorageService.getRefreshed.calls.length).toEqual(0);
+        });
+      });
+      return it('should return an additional refreshed profile defered if the cached profile is older then maxAge', function() {
+        var cacheTimes, maxAge, profiles;
+        profiles = [];
+        cacheTimes = [];
+        maxAge = 50;
+        profileDAO.getByFriendWithDeferedRefresh(friend, maxAge, function(profileResult, status) {
+          profiles.push(profileResult);
+          return cacheTimes.push(status.cacheTime);
+        });
+        waitsFor((function() {
+          return profiles.length === 2;
+        }), "Load Cached And Fresh Profile", 100);
+        return runs(function() {
+          expect(profiles.length).toEqual(2);
+          expect(profiles[0].name).toEqual('cachedName');
+          expect(profiles[1].name).toEqual('freshName');
+          expect(cacheTimes).toEqual([dummyCacheTime, currentTime]);
+          expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+          return expect(publicRemoteStorageService.getRefreshed).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
+        });
       });
     });
   });

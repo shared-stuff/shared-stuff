@@ -257,8 +257,9 @@
 
   ProfileDAO = (function() {
 
-    function ProfileDAO(publicRemoteStorageService) {
+    function ProfileDAO(publicRemoteStorageService, getTime) {
       this.publicRemoteStorageService = publicRemoteStorageService;
+      this.getTime = getTime != null ? getTime : getCurrentTime;
       this.profile = null;
       this.key = PROFILE_KEY;
     }
@@ -292,7 +293,19 @@
     };
 
     ProfileDAO.prototype.getByFriendRefreshed = function(friend, callback) {
-      return this._getByFriend('refresh', friend, callback);
+      return this._getByFriend('getRefreshed', friend, callback);
+    };
+
+    ProfileDAO.prototype.getByFriendWithDeferedRefresh = function(friend, maxAge, callback) {
+      var self;
+      self = this;
+      return this.getByFriend(friend, function(profile, status) {
+        callback(profile, status);
+        if (self.getTime() - status.cacheTime > maxAge) {
+          log("Update Profile defered");
+          return self.getByFriendRefreshed(friend, callback);
+        }
+      });
     };
 
     ProfileDAO.prototype._getByFriend = function(getMethod, friend, callback) {
@@ -347,7 +360,7 @@
       }
     };
 
-    PublicRemoteStorageService.prototype.refresh = function(userAddress, key, defaultValue, callback) {
+    PublicRemoteStorageService.prototype.getRefreshed = function(userAddress, key, defaultValue, callback) {
       if (userAddress) {
         return this._refresh(userAddress, key, defaultValue, callback);
       } else {
@@ -437,20 +450,34 @@
       return this.profileDAO[getProfileMethod](friend, function(profile, profileStatus) {
         var getStuffMethod;
         friend.location = profile.location;
-        getStuffMethod = refreshed ? 'refresh' : 'get';
+        getStuffMethod = refreshed ? 'getRefreshed' : 'get';
         return self.publicRemoteStorageDAO[getStuffMethod](friend.userAddress, getFriendStuffKey(friend), [], function(itemContainer, stuffStatus) {
           log("Got Stuff for " + friend.name);
           return callback(getItemsFromContainer(itemContainer, function(item) {
             item = new Stuff(item);
             item.owner = friend;
             return item;
-          }), Math.min(profileStatus.cacheTime, stuffStatus.cacheTime));
+          }), {
+            cacheTime: Math.min(profileStatus.cacheTime, stuffStatus.cacheTime)
+          });
         });
       });
     };
 
     FriendsStuffDAO.prototype.listStuffByFriendRefreshed = function(friend, callback) {
       return this.listStuffByFriend(friend, callback, true);
+    };
+
+    FriendsStuffDAO.prototype.listStuffByFriendWithDeferedRefresh = function(friend, maxAge, callback) {
+      var self;
+      self = this;
+      return this.listStuffByFriend(friend, function(stuffList, status) {
+        callback(stuffList, status);
+        if (isOlderThan(status.cacheTime, maxAge)) {
+          log("Update friend's stuff defered");
+          return self.listStuffByFriendRefreshed(friend, callback);
+        }
+      });
     };
 
     FriendsStuffDAO.prototype.refreshMostOutdatedFriend = function(ageThreshold, callback) {
@@ -515,9 +542,9 @@
         _results = [];
         for (_i = 0, _len = friends.length; _i < _len; _i++) {
           friend = friends[_i];
-          _results.push(self.listStuffByFriend(friend, function(friendStuff, cacheTime) {
+          _results.push(self.listStuffByFriend(friend, function(friendStuff, status) {
             self._updateWithLoadedItems(friendStuff);
-            self.cacheTimeByFriendID[friend.id] = cacheTime;
+            self.cacheTimeByFriendID[friend.id] = status.cacheTime;
             loadedCounter++;
             return callback(self.friends, self.friendsStuffList, loadedCounter === friends.length ? 'LOADED' : 'LOADING');
           }));

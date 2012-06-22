@@ -78,7 +78,7 @@ describe('PublicRemoteStorageService', ->
     remoteStorageMock.setPublicItem('user@host.com','key','newValue')
 
     result = undefined
-    service.refresh('user@host.com','key','defaultValue', (resultArg)->
+    service.getRefreshed('user@host.com','key','defaultValue', (resultArg)->
       result = resultArg
     )
 
@@ -89,12 +89,12 @@ describe('PublicRemoteStorageService', ->
       expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('{"time":123,"data":"newValue"}')
   )
 
-  it('should cache remoteStorage clients in memory', ->
+  it('should cache remoteStorage clients (wrapping storageInfo) in memory', ->
     remoteStorageMock.setPublicItem('user@host.com','key','newValue')
 
     secondResult = undefined
-    service.refresh('user@host.com','key','defaultValue', (result1)->
-      service.refresh('user@host.com','key','defaultValue', (result2)->
+    service.getRefreshed('user@host.com','key','defaultValue', (result1)->
+      service.getRefreshed('user@host.com','key','defaultValue', (result2)->
         secondResult = result2
       )
     )

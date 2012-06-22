@@ -75,6 +75,9 @@ applyIfNeeded = ($scope,f)->
   else
     $scope.$apply(f)
 
+digestIfNeeded = ($scope)->
+  if (!$scope.$$phase)
+    $scope.$digest()
 
 collectTokenStringFromItem = (item) ->
   searchString = ''
@@ -112,3 +115,4 @@ this.utils =
   search: search
   getCurrentTime: getCurrentTime
   isOlderThan: isOlderThan
+  digestIfNeeded: digestIfNeeded

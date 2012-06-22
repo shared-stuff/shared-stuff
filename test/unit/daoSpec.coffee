@@ -196,9 +196,9 @@ describe('MyStuffDAO',->
 
 
 class PublicRemoteStorageServiceMock
-  constructor: (@dummyValueCache,@dummyValueFresh,@dummyStatus) ->
-  get: (userAddress,key,defaultValue,callback) -> callback(@dummyValueCache,@dummyStatus)
-  refresh: (userAddress,key,defaultValue,callback) -> callback(@dummyValueFresh,@dummyStatus)
+  constructor: (@dummyValueCache,@dummyValueFresh,@dummyCacheTime,@currentTime) ->
+  get: (userAddress,key,defaultValue,callback) -> callback(@dummyValueCache,{cacheTime: @dummyCacheTime})
+  getRefreshed: (userAddress,key,defaultValue,callback) -> callback(@dummyValueFresh,{cacheTime: @currentTime})
 
 
 describe('ProfileDAO', ->
@@ -206,12 +206,14 @@ describe('ProfileDAO', ->
   profileDAO = undefined
   friend = new Friend({userAddress: 'user@host.org'})
   dummyCacheTime = 123
+  currentTime = 200
+  getMockedTime = -> currentTime
 
   beforeEach ->
-    publicRemoteStorageService = new PublicRemoteStorageServiceMock({name:'cachedName'},{name: 'freshName'},{cacheTime: dummyCacheTime})
-    profileDAO = new ProfileDAO(publicRemoteStorageService)
+    publicRemoteStorageService = new PublicRemoteStorageServiceMock({name:'cachedName'},{name: 'freshName'},dummyCacheTime,currentTime)
+    profileDAO = new ProfileDAO(publicRemoteStorageService,getMockedTime)
     spyOn(publicRemoteStorageService, 'get').andCallThrough();
-    spyOn(publicRemoteStorageService, 'refresh').andCallThrough();
+    spyOn(publicRemoteStorageService, 'getRefreshed').andCallThrough();
 
   it('should normally return a cached profile', ->
     profile = undefined
@@ -241,8 +243,50 @@ describe('ProfileDAO', ->
 
     runs ->
       expect(profile.name).toEqual('freshName')
-      expect(cacheTime).toEqual(dummyCacheTime)
-      expect(publicRemoteStorageService.refresh).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+      expect(cacheTime).toEqual(currentTime)
+      expect(publicRemoteStorageService.getRefreshed).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+  )
+
+  describe('getByFriendWithDeferedRefresh', ->
+
+    it('should not return a refreshed profile defered if the cached is younger then maxAge', ->
+      profile = undefined
+      cacheTime = undefined
+      maxAge = 200
+      profileDAO.getByFriendWithDeferedRefresh(friend,maxAge, (profileResult,status)->
+        profile = profileResult
+        cacheTime = status.cacheTime
+      )
+
+      waitsFor( (-> profile), "Load Fresh Profile", 100 )
+
+      runs ->
+        expect(profile.name).toEqual('cachedName')
+        expect(cacheTime).toEqual(dummyCacheTime)
+        expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+        expect(publicRemoteStorageService.getRefreshed.calls.length).toEqual(0);
+    )
+
+    it('should return an additional refreshed profile defered if the cached profile is older then maxAge', ->
+      profiles = []
+      cacheTimes = []
+      maxAge = 50
+      profileDAO.getByFriendWithDeferedRefresh(friend,maxAge, (profileResult,status)->
+        profiles.push(profileResult)
+        cacheTimes.push(status.cacheTime)
+      )
+
+      waitsFor( (-> profiles.length==2), "Load Cached And Fresh Profile", 100 )
+
+      runs ->
+        expect(profiles.length).toEqual(2)
+        expect(profiles[0].name).toEqual('cachedName')
+        expect(profiles[1].name).toEqual('freshName')
+        expect(cacheTimes).toEqual([dummyCacheTime,currentTime])
+        expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+        expect(publicRemoteStorageService.getRefreshed).toHaveBeenCalledWith(friend.userAddress, profileDAO.key,{},jasmine.any(Function));
+    )
+
   )
 
 )
