@@ -173,35 +173,65 @@ class ProfileDAO
 
 
 class PublicRemoteStorageService
-  constructor: ->
+  constructor: (@remoteStorage,@localStorage)->
     @clientByUserAddress = {}
 
   get: (userAddress,key,defaultValue,callback) ->
-    self = this
     if !userAddress
       log("Missing UserAdress!")
       callback(defaultValue)
-    else if @clientByUserAddress[userAddress]
-      @getByClient(@clientByUserAddress[userAddress],key,defaultValue,callback)
+      return;
+    cachedData = @localStorage.getItem(@localStorageKey(userAddress,key))
+    if cachedData
+      callback(JSON.parse(cachedData))
     else
-      remoteStorage.getStorageInfo(userAddress, (error, storageInfo) ->
-        if storageInfo
-          client = remoteStorage.createClient(storageInfo, 'public')
-          self.clientByUserAddress[userAddress] = client
-          self.getByClient(client,key,defaultValue,callback)
-        else
-          log(error)
-          callback(defaultValue,error)
-      )
+      @_refresh(userAddress,key,defaultValue,callback)
+
+  refresh: (userAddress,key,defaultValue,callback) ->
+    if userAddress
+      @_refresh(userAddress,key,defaultValue,callback)
+    else
+      log("Missing UserAdress!")
+      callback(defaultValue)
 
   #private
-  getByClient: (client,key,defaultValue,callback) ->
+  _refresh: (userAddress,key,defaultValue,callback) ->
+    self = this
+    if @clientByUserAddress[userAddress]
+      @getByClient(userAddress,@clientByUserAddress[userAddress],key,defaultValue,callback)
+    else
+    self.remoteStorage.getStorageInfo(userAddress, (error, storageInfo) ->
+      if storageInfo
+        client = self.remoteStorage.createClient(storageInfo, 'public')
+        self.clientByUserAddress[userAddress] = client
+        self.getByClient(userAddress,client,key,defaultValue,callback)
+      else
+        log(error)
+        callback(defaultValue,error)
+    )
+
+
+  #private
+  getByClient: (userAddress,client,key,defaultValue,callback) ->
+    self = this
     client.get(key, (err, data) ->
       if data
+        self.cacheInLocalStorage(userAddress,key,data)
         callback(JSON.parse(data))
       else
         callback(defaultValue)
     )
+
+  #private
+  cacheInLocalStorage: (userAddress,key,valueAsJsonString)->
+    @localStorage.setItem(@localStorageKey(userAddress,key),valueAsJsonString)
+
+  #private
+  localStorageKey: (userAddress,key) -> "remoteStorageCache:#{userAddress}:public:#{key}"
+
+
+
+
 
 getItemsFromContainer = (itemContainer,wrapItem) -> _.map(itemContainer?.items || [],wrapItem)
 
@@ -277,7 +307,7 @@ getFriendStuffKey = (friend) -> PUBLIC_PREFIX + (if !isBlank(friend.secret) then
 initServices = ->
   friendDAO = new RemoteStorageDAO(remoteStorageUtils,RS_CATEGORY, 'myFriendsList', (data) -> new Friend(data))
   settingsDAO = new SettingsDAO()
-  publicRemoteStorageService = new PublicRemoteStorageService()
+  publicRemoteStorageService = new PublicRemoteStorageService(remoteStorage,localStorage)
   profileDAO = new ProfileDAO(publicRemoteStorageService)
 
   angular.module('myApp.services', []).
@@ -295,3 +325,4 @@ initServices()
 #export
 this.RemoteStorageDAO = RemoteStorageDAO
 this.MyStuffDAO = MyStuffDAO
+this.PublicRemoteStorageService = PublicRemoteStorageService

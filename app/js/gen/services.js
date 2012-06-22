@@ -295,41 +295,76 @@
 
   PublicRemoteStorageService = (function() {
 
-    function PublicRemoteStorageService() {
+    function PublicRemoteStorageService(remoteStorage, localStorage) {
+      this.remoteStorage = remoteStorage;
+      this.localStorage = localStorage;
       this.clientByUserAddress = {};
     }
 
     PublicRemoteStorageService.prototype.get = function(userAddress, key, defaultValue, callback) {
-      var self;
-      self = this;
+      var cachedData;
       if (!userAddress) {
         log("Missing UserAdress!");
-        return callback(defaultValue);
-      } else if (this.clientByUserAddress[userAddress]) {
-        return this.getByClient(this.clientByUserAddress[userAddress], key, defaultValue, callback);
+        callback(defaultValue);
+        return;
+      }
+      cachedData = this.localStorage.getItem(this.localStorageKey(userAddress, key));
+      if (cachedData) {
+        return callback(JSON.parse(cachedData));
       } else {
-        return remoteStorage.getStorageInfo(userAddress, function(error, storageInfo) {
-          var client;
-          if (storageInfo) {
-            client = remoteStorage.createClient(storageInfo, 'public');
-            self.clientByUserAddress[userAddress] = client;
-            return self.getByClient(client, key, defaultValue, callback);
-          } else {
-            log(error);
-            return callback(defaultValue, error);
-          }
-        });
+        return this._refresh(userAddress, key, defaultValue, callback);
       }
     };
 
-    PublicRemoteStorageService.prototype.getByClient = function(client, key, defaultValue, callback) {
+    PublicRemoteStorageService.prototype.refresh = function(userAddress, key, defaultValue, callback) {
+      if (userAddress) {
+        return this._refresh(userAddress, key, defaultValue, callback);
+      } else {
+        log("Missing UserAdress!");
+        return callback(defaultValue);
+      }
+    };
+
+    PublicRemoteStorageService.prototype._refresh = function(userAddress, key, defaultValue, callback) {
+      var self;
+      self = this;
+      if (this.clientByUserAddress[userAddress]) {
+        this.getByClient(userAddress, this.clientByUserAddress[userAddress], key, defaultValue, callback);
+      } else {
+
+      }
+      return self.remoteStorage.getStorageInfo(userAddress, function(error, storageInfo) {
+        var client;
+        if (storageInfo) {
+          client = self.remoteStorage.createClient(storageInfo, 'public');
+          self.clientByUserAddress[userAddress] = client;
+          return self.getByClient(userAddress, client, key, defaultValue, callback);
+        } else {
+          log(error);
+          return callback(defaultValue, error);
+        }
+      });
+    };
+
+    PublicRemoteStorageService.prototype.getByClient = function(userAddress, client, key, defaultValue, callback) {
+      var self;
+      self = this;
       return client.get(key, function(err, data) {
         if (data) {
+          self.cacheInLocalStorage(userAddress, key, data);
           return callback(JSON.parse(data));
         } else {
           return callback(defaultValue);
         }
       });
+    };
+
+    PublicRemoteStorageService.prototype.cacheInLocalStorage = function(userAddress, key, valueAsJsonString) {
+      return this.localStorage.setItem(this.localStorageKey(userAddress, key), valueAsJsonString);
+    };
+
+    PublicRemoteStorageService.prototype.localStorageKey = function(userAddress, key) {
+      return "remoteStorageCache:" + userAddress + ":public:" + key;
     };
 
     return PublicRemoteStorageService;
@@ -447,7 +482,7 @@
       return new Friend(data);
     });
     settingsDAO = new SettingsDAO();
-    publicRemoteStorageService = new PublicRemoteStorageService();
+    publicRemoteStorageService = new PublicRemoteStorageService(remoteStorage, localStorage);
     profileDAO = new ProfileDAO(publicRemoteStorageService);
     return angular.module('myApp.services', []).value('version', '0.1').value('settingsDAO', settingsDAO).value('stuffDAO', new MyStuffDAO(remoteStorageUtils, RS_CATEGORY, MY_STUFF_KEY, settingsDAO)).value('friendDAO', friendDAO).value('friendsStuffDAO', new FriendsStuffDAO(friendDAO, publicRemoteStorageService, profileDAO)).value('profileDAO', profileDAO).value('localizer', new Localizer());
   };
@@ -457,5 +492,7 @@
   this.RemoteStorageDAO = RemoteStorageDAO;
 
   this.MyStuffDAO = MyStuffDAO;
+
+  this.PublicRemoteStorageService = PublicRemoteStorageService;
 
 }).call(this);
