@@ -479,13 +479,12 @@
     };
 
     FriendsStuffDAO.prototype.refreshMostOutdatedFriend = function(ageThreshold, callback) {
-      var cacheTimeByFriendID, mostOutdatedFriend,
+      var mostOutdatedFriend,
         _this = this;
-      cacheTimeByFriendID = this.cacheTimeByFriendID;
       mostOutdatedFriend = _.min(this.friends, function(friend) {
-        return cacheTimeByFriendID[friend.id] || 0;
+        return _this.cacheTimeByFriendID[friend.id] || 0;
       });
-      if (isOlderThan(cacheTimeByFriendID[mostOutdatedFriend.id], ageThreshold)) {
+      if (isOlderThan(this.cacheTimeByFriendID[mostOutdatedFriend.id], ageThreshold)) {
         return this.listStuffByFriend(mostOutdatedFriend, function(friendStuff, cacheTime) {
           log("Updating " + mostOutdatedFriend.name);
           _this._updateWithLoadedItems(friendStuff);

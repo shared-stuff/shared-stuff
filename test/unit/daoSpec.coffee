@@ -274,8 +274,8 @@ describe('FriendsStuffDAO', ->
     # mock some test data
     remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList',
       {items: [
-        {name: 'marco', userAddress: 'marco@host.org'}
-        {name: 'nora', userAddress: 'nora@host.org'}
+        {id:1, name: 'marco', userAddress: 'marco@host.org'}
+        {id:2, name: 'nora', userAddress: 'nora@host.org'}
       ]}
     )
     remoteStorageMock.setPublicItem('marco@host.org', 'sharedstuff-public',
@@ -286,9 +286,13 @@ describe('FriendsStuffDAO', ->
     )
     remoteStorageMock.setPublicItem('nora@host.org', 'sharedstuff-public',
       {items: [
-        {id: 3,title: 'Nora Stuff 1'}
+        {id: 3,title: 'Newest Nora Stuff 1'}
       ]}
     )
+    cachedNoraStuff = {items: [
+      {id: 3,title: 'Cached Nora Stuff 1'}
+    ]}
+    localStorageMock.setItem('remoteStorageCache:nora@host.org:public:sharedstuff-public', JSON.stringify({time:123,data:cachedNoraStuff}))
 
 
   it("should return friend's stuff", ->
@@ -310,7 +314,28 @@ describe('FriendsStuffDAO', ->
       expect(stuffList.length).toEqual(3)
       expect(stuffList[0].title).toEqual("Marco Stuff 1")
       expect(stuffList[1].title).toEqual("Marco Stuff 2")
-      expect(stuffList[2].title).toEqual("Nora Stuff 1")
+      expect(stuffList[2].title).toEqual("Cached Nora Stuff 1")
   )
+
+  it("should update friend's stuff on request", ->
+    friends = null
+    stuffList = null
+    status = null
+    updated = false
+    fsDao.list (friendsArg,stuffListArg,statusArg) ->
+      friends = friendsArg
+      stuffList = stuffListArg
+      status = statusArg
+      if statusArg=='LOADED'
+        fsDao.refreshMostOutdatedFriend(1000, ->
+          updated = true
+        )
+
+    waitsFor( (-> updated), "Updated Cached Friend Stuff", 100 )
+
+    runs ->
+      expect(stuffList[2].title).toEqual("Newest Nora Stuff 1")
+  )
+
 )
 

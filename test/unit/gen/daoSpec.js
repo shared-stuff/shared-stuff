@@ -303,7 +303,7 @@
     fsDao = void 0;
     remoteStorageUtilsMock = void 0;
     beforeEach(function() {
-      var friendDAO, localStorageMock, profileDAO, publicRemoteStorageService, remoteStorageMock;
+      var cachedNoraStuff, friendDAO, localStorageMock, profileDAO, publicRemoteStorageService, remoteStorageMock;
       remoteStorageUtilsMock = createRemoteStorageUtilsMock();
       friendDAO = new RemoteStorageDAO(remoteStorageUtilsMock, RS_CATEGORY, 'myFriendsList', function(data) {
         return new Friend(data);
@@ -316,9 +316,11 @@
       remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList', {
         items: [
           {
+            id: 1,
             name: 'marco',
             userAddress: 'marco@host.org'
           }, {
+            id: 2,
             name: 'nora',
             userAddress: 'nora@host.org'
           }
@@ -335,16 +337,28 @@
           }
         ]
       });
-      return remoteStorageMock.setPublicItem('nora@host.org', 'sharedstuff-public', {
+      remoteStorageMock.setPublicItem('nora@host.org', 'sharedstuff-public', {
         items: [
           {
             id: 3,
-            title: 'Nora Stuff 1'
+            title: 'Newest Nora Stuff 1'
           }
         ]
       });
+      cachedNoraStuff = {
+        items: [
+          {
+            id: 3,
+            title: 'Cached Nora Stuff 1'
+          }
+        ]
+      };
+      return localStorageMock.setItem('remoteStorageCache:nora@host.org:public:sharedstuff-public', JSON.stringify({
+        time: 123,
+        data: cachedNoraStuff
+      }));
     });
-    return it("should return friend's stuff", function() {
+    it("should return friend's stuff", function() {
       var friends, status, stuffList;
       friends = null;
       stuffList = null;
@@ -364,7 +378,30 @@
         expect(stuffList.length).toEqual(3);
         expect(stuffList[0].title).toEqual("Marco Stuff 1");
         expect(stuffList[1].title).toEqual("Marco Stuff 2");
-        return expect(stuffList[2].title).toEqual("Nora Stuff 1");
+        return expect(stuffList[2].title).toEqual("Cached Nora Stuff 1");
+      });
+    });
+    return it("should update friend's stuff on request", function() {
+      var friends, status, stuffList, updated;
+      friends = null;
+      stuffList = null;
+      status = null;
+      updated = false;
+      fsDao.list(function(friendsArg, stuffListArg, statusArg) {
+        friends = friendsArg;
+        stuffList = stuffListArg;
+        status = statusArg;
+        if (statusArg === 'LOADED') {
+          return fsDao.refreshMostOutdatedFriend(1000, function() {
+            return updated = true;
+          });
+        }
+      });
+      waitsFor((function() {
+        return updated;
+      }), "Updated Cached Friend Stuff", 100);
+      return runs(function() {
+        return expect(stuffList[2].title).toEqual("Newest Nora Stuff 1");
       });
     });
   });

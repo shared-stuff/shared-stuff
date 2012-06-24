@@ -282,9 +282,8 @@ class FriendsStuffDAO
     )
 
   refreshMostOutdatedFriend: (ageThreshold,callback) ->
-    cacheTimeByFriendID = @cacheTimeByFriendID
-    mostOutdatedFriend= _.min(@friends, (friend) -> cacheTimeByFriendID[friend.id] || 0)
-    if isOlderThan(cacheTimeByFriendID[mostOutdatedFriend.id],ageThreshold)
+    mostOutdatedFriend= _.min(@friends, (friend) => @cacheTimeByFriendID[friend.id] || 0)
+    if isOlderThan(@cacheTimeByFriendID[mostOutdatedFriend.id],ageThreshold)
       @listStuffByFriend(mostOutdatedFriend, (friendStuff,cacheTime) =>
         log("Updating #{mostOutdatedFriend.name}")
         @_updateWithLoadedItems(friendStuff)
