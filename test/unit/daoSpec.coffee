@@ -1,36 +1,7 @@
 defer = utils.defer
 log = utils.log
-
-createRemoteStorageUtilsMock = () ->
-  mockedValues = {}
-  return {
-    getItemObjectSync: (category,key) ->
-      log(mockedValues)
-      json = mockedValues[category]?[key]
-      if json
-        return JSON.parse(json)
-      else
-        return undefined
-
-    setItemObjectSync: (category,key,value) ->
-      if !(category of mockedValues)
-        mockedValues[category] = {}
-      mockedValues[category][key] = JSON.stringify(value)
-
-    getItem: (category,key,callback) ->
-      defer ->
-        callback(null,mockedValues[category]?[key]);
-
-    setItem: (category,key,value,callback) ->
-      log('Set Item'+category+key+value)
-      if !(category of mockedValues)
-        mockedValues[category] = {}
-      mockedValues[category][key] = value
-      defer ->
-        callback()
-  }
-
-
+createRemoteStorageUtilsMock = testUtils.createRemoteStorageUtilsMock
+PublicRemoteStorageServiceMock = testUtils.PublicRemoteStorageServiceMock
 
 describe('RemoteStorageDAO',->
 
@@ -195,12 +166,6 @@ describe('MyStuffDAO',->
 )
 
 
-class PublicRemoteStorageServiceMock
-  constructor: (@dummyValueCache,@dummyValueFresh,@dummyCacheTime,@currentTime) ->
-  get: (userAddress,key,defaultValue,callback) -> callback(@dummyValueCache,{cacheTime: @dummyCacheTime})
-  getRefreshed: (userAddress,key,defaultValue,callback) -> callback(@dummyValueFresh,{cacheTime: @currentTime})
-
-
 describe('ProfileDAO', ->
   publicRemoteStorageService = undefined
   profileDAO = undefined
@@ -292,4 +257,60 @@ describe('ProfileDAO', ->
 )
 
 
+describe('FriendsStuffDAO', ->
+  fsDao = undefined
+  remoteStorageUtilsMock = undefined
+
+
+  beforeEach ->
+    remoteStorageUtilsMock = createRemoteStorageUtilsMock()
+    friendDAO = new RemoteStorageDAO(remoteStorageUtilsMock,RS_CATEGORY, 'myFriendsList', (data) -> new Friend(data))
+    remoteStorageMock = new testUtils.RemoteStorageMock()
+    localStorageMock = new testUtils.LocalStorageMock()
+    publicRemoteStorageService = new PublicRemoteStorageService(remoteStorageMock,localStorageMock)
+    profileDAO = new ProfileDAO(publicRemoteStorageService)
+    fsDao = new FriendsStuffDAO(friendDAO,publicRemoteStorageService,profileDAO)
+
+    # mock some test data
+    remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList',
+      {items: [
+        {name: 'marco', userAddress: 'marco@host.org'}
+        {name: 'nora', userAddress: 'nora@host.org'}
+      ]}
+    )
+    remoteStorageMock.setPublicItem('marco@host.org', 'sharedstuff-public',
+      {items: [
+        {id: 1,title: 'Marco Stuff 1'}
+        {id: 2,title: 'Marco Stuff 2'}
+      ]}
+    )
+    remoteStorageMock.setPublicItem('nora@host.org', 'sharedstuff-public',
+      {items: [
+        {id: 3,title: 'Nora Stuff 1'}
+      ]}
+    )
+
+
+  it("should return friend's stuff", ->
+    friends = null
+    stuffList = null
+    status = null
+    fsDao.list (friendsArg,stuffListArg,statusArg) ->
+      friends = friendsArg
+      stuffList = stuffListArg
+      status = statusArg
+
+    waitsFor( (-> status=='LOADED'), "Loaded Stuff", 100 )
+
+    runs ->
+      expect(friends.length).toEqual(2)
+      expect(friends[0].name).toEqual('marco')
+      expect(friends[1].name).toEqual('nora')
+
+      expect(stuffList.length).toEqual(3)
+      expect(stuffList[0].title).toEqual("Marco Stuff 1")
+      expect(stuffList[1].title).toEqual("Marco Stuff 2")
+      expect(stuffList[2].title).toEqual("Nora Stuff 1")
+  )
+)
 

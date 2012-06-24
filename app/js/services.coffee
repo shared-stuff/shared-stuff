@@ -150,15 +150,14 @@ class ProfileDAO
     @profile = null
     @key = PROFILE_KEY
 
-  load: (callback) ->
-    self = this
-    if self.profile
-      defer ->
-        callback(self.profile)
+  load: (callback) =>
+    if @profile
+      defer =>
+        callback(@profile)
     else
-      rs.getItem('public', self.key, (error, data)->
-        self.profile = JSON.parse(data || '{}')
-        callback(new Profile(self.profile))
+      rs.getItem('public', @key, (error, data) =>
+        @profile = JSON.parse(data || '{}')
+        callback(new Profile(@profile))
       )
 
   save: (profile,callback) ->
@@ -201,7 +200,7 @@ class PublicRemoteStorageService
   get: (userAddress,key,defaultValue,callback) ->
     if !userAddress
       log("Missing UserAdress!")
-      callback(defaultValue,{error:"Missing UserAddress",cacheTime:self.getTime()})
+      callback(defaultValue,{error:"Missing UserAddress",cacheTime:@getTime()})
       return;
     cachedData = @localStorage.getItem(@localStorageKey(userAddress,key))
     if cachedData
@@ -216,33 +215,31 @@ class PublicRemoteStorageService
       @_refresh(userAddress,key,defaultValue,callback)
     else
       log("Missing UserAdress!")
-      callback(defaultValue,{error:"Missing UserAddress",cacheTime:self.getTime()})
+      callback(defaultValue,{error:"Missing UserAddress",cacheTime:@getTime()})
 
   #private
-  _refresh: (userAddress,key,defaultValue,callback) ->
-    self = this
+  _refresh: (userAddress,key,defaultValue,callback) =>
     if @clientByUserAddress[userAddress]
       @getByClient(userAddress,@clientByUserAddress[userAddress],key,defaultValue,callback)
     else
-      self.remoteStorage.getStorageInfo(userAddress, (error, storageInfo) ->
+      @remoteStorage.getStorageInfo(userAddress, (error, storageInfo) =>
         if storageInfo
-          client = self.remoteStorage.createClient(storageInfo, 'public')
-          self.clientByUserAddress[userAddress] = client
-          self.getByClient(userAddress,client,key,defaultValue,callback)
+          client = @remoteStorage.createClient(storageInfo, 'public')
+          @clientByUserAddress[userAddress] = client
+          @getByClient(userAddress,client,key,defaultValue,callback)
         else
           log(error)
-          callback(defaultValue,{error:error,cacheTime:self.getTime()})
+          callback(defaultValue,{error:error,cacheTime:@getTime()})
       )
 
 
   #private
-  getByClient: (userAddress,client,key,defaultValue,callback) ->
-    self = this
-    client.get(key, (err, dataJsonString) ->
-      currentTime = self.getTime()
+  getByClient: (userAddress,client,key,defaultValue,callback) =>
+    client.get(key, (err, dataJsonString) =>
+      currentTime = @getTime()
       if dataJsonString
         data = JSON.parse(dataJsonString);
-        self.cacheInLocalStorage(userAddress,key,new CacheItemWrapper(currentTime,data))
+        @cacheInLocalStorage(userAddress,key,new CacheItemWrapper(currentTime,data))
         callback(data,{cacheTime:currentTime})
       else
         callback(defaultValue,{cacheTime:currentTime})
@@ -267,13 +264,12 @@ class FriendsStuffDAO
     @cacheTimeByFriendID = {}
     @friends = []
 
-  listStuffByFriend: (friend, callback,refreshed = false) ->
-    self = this
+  listStuffByFriend: (friend, callback,refreshed = false) =>
     getProfileMethod = if refreshed then 'getByFriendRefreshed' else 'getByFriend'
-    @profileDAO[getProfileMethod](friend, (profile,profileStatus) ->
+    @profileDAO[getProfileMethod](friend, (profile,profileStatus) =>
       friend.location = profile.location
       getStuffMethod = if refreshed then 'getRefreshed' else 'get'
-      self.publicRemoteStorageDAO[getStuffMethod](friend.userAddress,getFriendStuffKey(friend),[], (itemContainer,stuffStatus)->
+      @publicRemoteStorageDAO[getStuffMethod](friend.userAddress,getFriendStuffKey(friend),[], (itemContainer,stuffStatus)->
         log("Got Stuff for #{friend.name}")
         callback(getItemsFromContainer(itemContainer, (item)->
           item = new Stuff(item)
@@ -287,24 +283,22 @@ class FriendsStuffDAO
     @listStuffByFriend(friend,callback,true)
 
   listStuffByFriendWithDeferedRefresh: (friend,maxAge,callback) ->
-    self = this
-    @listStuffByFriend(friend, (stuffList,status) ->
+    @listStuffByFriend(friend, (stuffList,status) =>
       callback(stuffList,status)
       if isOlderThan(status.cacheTime,maxAge)
         log("Update friend's stuff defered")
-        self.listStuffByFriendRefreshed(friend,callback)
+        @listStuffByFriendRefreshed(friend,callback)
     )
 
   refreshMostOutdatedFriend: (ageThreshold,callback) ->
-    self = this
     cacheTimeByFriendID = @cacheTimeByFriendID
     mostOutdatedFriend= _.min(@friends, (friend) -> cacheTimeByFriendID[friend.id] || 0)
     if isOlderThan(cacheTimeByFriendID[mostOutdatedFriend.id],ageThreshold)
-      self.listStuffByFriend(mostOutdatedFriend, (friendStuff,cacheTime)->
+      @listStuffByFriend(mostOutdatedFriend, (friendStuff,cacheTime) =>
         log("Updating #{mostOutdatedFriend.name}")
-        self._updateWithLoadedItems(friendStuff)
-        self.cacheTimeByFriendID[mostOutdatedFriend.id] = cacheTime
-        callback(self.friends,self.friendsStuffList,'LOADED')
+        @_updateWithLoadedItems(friendStuff)
+        @cacheTimeByFriendID[mostOutdatedFriend.id] = cacheTime
+        callback(@friends,@friendsStuffList,'LOADED')
       ,true)
 
   # returns a list of invalid attributes
@@ -334,18 +328,18 @@ class FriendsStuffDAO
     @friendsStuffList = []
 
   list: (callback) ->
-    self = @
-    @friendDAO.list (friends)->
-      self.friends = friends
+    @friendDAO.list (friends) =>
+      @friends = friends
       loadedCounter = 0
       if friends.length==0
-        callback(self.friends,self.friendsStuffList,'NO_FRIENDS')
+        callback(@friends,@friendsStuffList,'NO_FRIENDS')
       for friend in friends
-        self.listStuffByFriend(friend, (friendStuff,status) ->
-            self._updateWithLoadedItems(friendStuff)
-            self.cacheTimeByFriendID[friend.id] = status.cacheTime
+        @listStuffByFriend(friend, (friendStuff,status) =>
+            @_updateWithLoadedItems(friendStuff)
+            @cacheTimeByFriendID[friend.id] = status.cacheTime
             loadedCounter++
-            callback(self.friends,self.friendsStuffList,if loadedCounter==friends.length then 'LOADED' else 'LOADING')
+            returnStatus = if loadedCounter==friends.length then 'LOADED' else 'LOADING'
+            callback(@friends,@friendsStuffList,returnStatus)
         )
 
   _updateWithLoadedItems: (friendStuff)->
@@ -385,3 +379,4 @@ this.MyStuffDAO = MyStuffDAO
 this.ProfileDAO = ProfileDAO
 this.PublicRemoteStorageService = PublicRemoteStorageService
 this.FriendsStuffDAO = FriendsStuffDAO
+this.RS_CATEGORY = RS_CATEGORY

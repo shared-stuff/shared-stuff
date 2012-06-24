@@ -5,40 +5,9 @@
 
   log = utils.log;
 
-  createRemoteStorageUtilsMock = function() {
-    var mockedValues;
-    mockedValues = {};
-    return {
-      getItemObjectSync: function(category, key) {
-        var json, _ref;
-        log(mockedValues);
-        json = (_ref = mockedValues[category]) != null ? _ref[key] : void 0;
-        if (json) {
-          return JSON.parse(json);
-        } else {
+  createRemoteStorageUtilsMock = testUtils.createRemoteStorageUtilsMock;
 
-        }
-      },
-      setItemObjectSync: function(category, key, value) {
-        if (!(category in mockedValues)) mockedValues[category] = {};
-        return mockedValues[category][key] = JSON.stringify(value);
-      },
-      getItem: function(category, key, callback) {
-        return defer(function() {
-          var _ref;
-          return callback(null, (_ref = mockedValues[category]) != null ? _ref[key] : void 0);
-        });
-      },
-      setItem: function(category, key, value, callback) {
-        log('Set Item' + category + key + value);
-        if (!(category in mockedValues)) mockedValues[category] = {};
-        mockedValues[category][key] = value;
-        return defer(function() {
-          return callback();
-        });
-      }
-    };
-  };
+  PublicRemoteStorageServiceMock = testUtils.PublicRemoteStorageServiceMock;
 
   describe('RemoteStorageDAO', function() {
     var remoteStorageUtilsMock, rsCategory, rsKey;
@@ -229,31 +198,6 @@
     });
   });
 
-  PublicRemoteStorageServiceMock = (function() {
-
-    function PublicRemoteStorageServiceMock(dummyValueCache, dummyValueFresh, dummyCacheTime, currentTime) {
-      this.dummyValueCache = dummyValueCache;
-      this.dummyValueFresh = dummyValueFresh;
-      this.dummyCacheTime = dummyCacheTime;
-      this.currentTime = currentTime;
-    }
-
-    PublicRemoteStorageServiceMock.prototype.get = function(userAddress, key, defaultValue, callback) {
-      return callback(this.dummyValueCache, {
-        cacheTime: this.dummyCacheTime
-      });
-    };
-
-    PublicRemoteStorageServiceMock.prototype.getRefreshed = function(userAddress, key, defaultValue, callback) {
-      return callback(this.dummyValueFresh, {
-        cacheTime: this.currentTime
-      });
-    };
-
-    return PublicRemoteStorageServiceMock;
-
-  })();
-
   describe('ProfileDAO', function() {
     var currentTime, dummyCacheTime, friend, getMockedTime, profileDAO, publicRemoteStorageService;
     publicRemoteStorageService = void 0;
@@ -350,6 +294,77 @@
           expect(publicRemoteStorageService.get).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
           return expect(publicRemoteStorageService.getRefreshed).toHaveBeenCalledWith(friend.userAddress, profileDAO.key, {}, jasmine.any(Function));
         });
+      });
+    });
+  });
+
+  describe('FriendsStuffDAO', function() {
+    var fsDao, remoteStorageUtilsMock;
+    fsDao = void 0;
+    remoteStorageUtilsMock = void 0;
+    beforeEach(function() {
+      var friendDAO, localStorageMock, profileDAO, publicRemoteStorageService, remoteStorageMock;
+      remoteStorageUtilsMock = createRemoteStorageUtilsMock();
+      friendDAO = new RemoteStorageDAO(remoteStorageUtilsMock, RS_CATEGORY, 'myFriendsList', function(data) {
+        return new Friend(data);
+      });
+      remoteStorageMock = new testUtils.RemoteStorageMock();
+      localStorageMock = new testUtils.LocalStorageMock();
+      publicRemoteStorageService = new PublicRemoteStorageService(remoteStorageMock, localStorageMock);
+      profileDAO = new ProfileDAO(publicRemoteStorageService);
+      fsDao = new FriendsStuffDAO(friendDAO, publicRemoteStorageService, profileDAO);
+      remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList', {
+        items: [
+          {
+            name: 'marco',
+            userAddress: 'marco@host.org'
+          }, {
+            name: 'nora',
+            userAddress: 'nora@host.org'
+          }
+        ]
+      });
+      remoteStorageMock.setPublicItem('marco@host.org', 'sharedstuff-public', {
+        items: [
+          {
+            id: 1,
+            title: 'Marco Stuff 1'
+          }, {
+            id: 2,
+            title: 'Marco Stuff 2'
+          }
+        ]
+      });
+      return remoteStorageMock.setPublicItem('nora@host.org', 'sharedstuff-public', {
+        items: [
+          {
+            id: 3,
+            title: 'Nora Stuff 1'
+          }
+        ]
+      });
+    });
+    return it("should return friend's stuff", function() {
+      var friends, status, stuffList;
+      friends = null;
+      stuffList = null;
+      status = null;
+      fsDao.list(function(friendsArg, stuffListArg, statusArg) {
+        friends = friendsArg;
+        stuffList = stuffListArg;
+        return status = statusArg;
+      });
+      waitsFor((function() {
+        return status === 'LOADED';
+      }), "Loaded Stuff", 100);
+      return runs(function() {
+        expect(friends.length).toEqual(2);
+        expect(friends[0].name).toEqual('marco');
+        expect(friends[1].name).toEqual('nora');
+        expect(stuffList.length).toEqual(3);
+        expect(stuffList[0].title).toEqual("Marco Stuff 1");
+        expect(stuffList[1].title).toEqual("Marco Stuff 2");
+        return expect(stuffList[2].title).toEqual("Nora Stuff 1");
       });
     });
   });
