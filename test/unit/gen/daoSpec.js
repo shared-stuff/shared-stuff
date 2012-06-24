@@ -316,11 +316,11 @@
       remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList', {
         items: [
           {
-            id: 1,
+            id: 'marco',
             name: 'marco',
             userAddress: 'marco@host.org'
           }, {
-            id: 2,
+            id: 'nora',
             name: 'nora',
             userAddress: 'nora@host.org'
           }
@@ -381,7 +381,7 @@
         return expect(stuffList[2].title).toEqual("Cached Nora Stuff 1");
       });
     });
-    return it("should update friend's stuff on request", function() {
+    it("should update friend's stuff on request", function() {
       var friends, status, stuffList, updated;
       friends = null;
       stuffList = null;
@@ -402,6 +402,24 @@
       }), "Updated Cached Friend Stuff", 100);
       return runs(function() {
         return expect(stuffList[2].title).toEqual("Newest Nora Stuff 1");
+      });
+    });
+    return it('listStuffByFriendWithDeferedRefresh', function() {
+      var maxAge, stuffListResults;
+      maxAge = 1000;
+      stuffListResults = [];
+      fsDao.listStuffByFriendWithDeferedRefresh(new Friend({
+        userAddress: 'nora@host.org'
+      }), 1000, function(stuffList) {
+        return stuffListResults.push(stuffList);
+      });
+      waitsFor((function() {
+        return stuffListResults.length === 2;
+      }), "Got Refreshed Stuff", 100);
+      return runs(function() {
+        log(stuffListResults);
+        expect(stuffListResults[0][0].title).toEqual("Cached Nora Stuff 1");
+        return expect(stuffListResults[1][0].title).toEqual("Newest Nora Stuff 1");
       });
     });
   });

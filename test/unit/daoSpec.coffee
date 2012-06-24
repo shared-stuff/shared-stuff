@@ -274,8 +274,8 @@ describe('FriendsStuffDAO', ->
     # mock some test data
     remoteStorageUtilsMock.setItemObjectSync(RS_CATEGORY, 'myFriendsList',
       {items: [
-        {id:1, name: 'marco', userAddress: 'marco@host.org'}
-        {id:2, name: 'nora', userAddress: 'nora@host.org'}
+        {id:'marco', name: 'marco', userAddress: 'marco@host.org'}
+        {id:'nora', name: 'nora', userAddress: 'nora@host.org'}
       ]}
     )
     remoteStorageMock.setPublicItem('marco@host.org', 'sharedstuff-public',
@@ -335,6 +335,21 @@ describe('FriendsStuffDAO', ->
 
     runs ->
       expect(stuffList[2].title).toEqual("Newest Nora Stuff 1")
+  )
+
+  it('listStuffByFriendWithDeferedRefresh', ->
+    maxAge = 1000;
+    stuffListResults = []
+    fsDao.listStuffByFriendWithDeferedRefresh(new Friend({userAddress: 'nora@host.org'}),1000, (stuffList) ->
+      stuffListResults.push(stuffList)
+    )
+
+    waitsFor( (-> stuffListResults.length==2), "Got Refreshed Stuff", 100 )
+
+    runs ->
+      log(stuffListResults)
+      expect(stuffListResults[0][0].title).toEqual("Cached Nora Stuff 1")
+      expect(stuffListResults[1][0].title).toEqual("Newest Nora Stuff 1")
   )
 
 )
