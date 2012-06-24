@@ -1,9 +1,9 @@
 (function() {
   'use strict';
   var CacheItemWrapper, FriendsStuffDAO, LocalStorageDAO, MY_STUFF_KEY, MyStuffDAO, PROFILE_KEY, PUBLIC_KEY, PUBLIC_PREFIX, ProfileDAO, PublicRemoteStorageService, RS_CATEGORY, RemoteStorageDAO, SettingsDAO, defer, doNothing, focus, getCurrentTime, getFriendStuffKey, getItemsFromContainer, initServices, isBlank, isOlderThan, log, randomString, rs, wrapIdentity,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
-    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; },
-    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   log = utils.log;
 
@@ -44,20 +44,22 @@
       this.category = category;
       this.key = key;
       this.wrapItem = wrapItem != null ? wrapItem : wrapIdentity;
+      this.deleteItem = __bind(this.deleteItem, this);
+      this.saveItem = __bind(this.saveItem, this);
+      this.readAllItems = __bind(this.readAllItems, this);
     }
 
     RemoteStorageDAO.prototype.readAllItems = function(callback) {
-      var self;
-      self = this;
-      if (self.dataCache) {
+      var _this = this;
+      if (this.dataCache) {
         return defer(function() {
-          return callback(self.dataCache.items);
+          return callback(_this.dataCache.items);
         });
       } else {
-        return self.remoteStorageUtils.getItem(this.category, this.key, function(error, data) {
-          self.dataCache = JSON.parse(data || '{}');
-          self.dataCache.items = getItemsFromContainer(self.dataCache, self.wrapItem);
-          return callback(self.dataCache.items);
+        return this.remoteStorageUtils.getItem(this.category, this.key, function(error, data) {
+          _this.dataCache = JSON.parse(data || '{}');
+          _this.dataCache.items = getItemsFromContainer(_this.dataCache, _this.wrapItem);
+          return callback(_this.dataCache.items);
         });
       }
     };
@@ -92,27 +94,25 @@
     };
 
     RemoteStorageDAO.prototype.saveItem = function(item, callback) {
-      var self;
-      self = this;
+      var _this = this;
       return this.readAllItems(function(items) {
         var oldItem;
-        oldItem = self.findItemByID(items, item.id);
+        oldItem = _this.findItemByID(items, item.id);
         if (oldItem) {
           items[_.indexOf(items, oldItem)] = item;
         } else {
           items.push(item);
         }
-        return self.save(items, callback);
+        return _this.save(items, callback);
       });
     };
 
     RemoteStorageDAO.prototype.deleteItem = function(id, callback) {
-      var self;
-      self = this;
+      var _this = this;
       return this.readAllItems(function(items) {
         var oldItem;
-        oldItem = self.findItemByID(items, id);
-        return self.save(_.without(items, oldItem), callback);
+        oldItem = _this.findItemByID(items, id);
+        return _this.save(_.without(items, oldItem), callback);
       });
     };
 
@@ -135,18 +135,18 @@
     }
 
     MyStuffDAO.prototype.save = function(allItems, callback) {
-      var publicStuff, self;
-      self = this;
+      var publicStuff,
+        _this = this;
       MyStuffDAO.__super__.save.call(this, allItems, callback);
       this.settingsDAO.getSecret(function(secret) {
-        return self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify({
+        return _this.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + secret, JSON.stringify({
           items: allItems
         }), doNothing);
       });
       publicStuff = _.filter(allItems, function(item) {
         return item.visibility === 'public';
       });
-      return self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify({
+      return this.remoteStorageUtils.setItem('public', PUBLIC_PREFIX + PUBLIC_KEY, JSON.stringify({
         items: publicStuff
       }), doNothing);
     };
@@ -208,26 +208,26 @@
   SettingsDAO = (function() {
 
     function SettingsDAO() {
-      this.settings = null;
+      this.saveSettings = __bind(this.saveSettings, this);
+      this.readSettings = __bind(this.readSettings, this);      this.settings = null;
       this.key = 'settings';
     }
 
     SettingsDAO.prototype.readSettings = function(callback) {
-      var self;
-      self = this;
-      if (self.settings) {
+      var _this = this;
+      if (this.settings) {
         return defer(function() {
-          return callback(self.settings);
+          return callback(_this.settings);
         });
       } else {
-        return rs.getItem(RS_CATEGORY, self.key, function(error, data) {
+        return rs.getItem(RS_CATEGORY, this.key, function(error, data) {
           var settings;
           if (error === 'timeout') {} else {
             settings = JSON.parse(data || '{}');
-            self.settings = settings;
+            _this.settings = settings;
             if (!settings.secret) {
               settings.secret = randomString(20);
-              return self.saveSettings(callback);
+              return _this.saveSettings(callback);
             } else {
               return callback(settings);
             }
@@ -237,18 +237,15 @@
     };
 
     SettingsDAO.prototype.getSecret = function(callback) {
-      var self;
-      self = this;
       return this.readSettings(function(settings) {
         return callback(settings.secret);
       });
     };
 
     SettingsDAO.prototype.saveSettings = function(callback) {
-      var self;
-      self = this;
-      return rs.setItem(RS_CATEGORY, self.key, JSON.stringify(self.settings), function() {
-        return callback(self.settings);
+      var _this = this;
+      return rs.setItem(RS_CATEGORY, this.key, JSON.stringify(this.settings), function() {
+        return callback(_this.settings);
       });
     };
 
@@ -261,6 +258,8 @@
     function ProfileDAO(publicRemoteStorageService, getTime) {
       this.publicRemoteStorageService = publicRemoteStorageService;
       this.getTime = getTime != null ? getTime : getCurrentTime;
+      this.getByFriendWithDeferedRefresh = __bind(this.getByFriendWithDeferedRefresh, this);
+      this.save = __bind(this.save, this);
       this.load = __bind(this.load, this);
       this.profile = null;
       this.key = PROFILE_KEY;
@@ -281,11 +280,10 @@
     };
 
     ProfileDAO.prototype.save = function(profile, callback) {
-      var self;
-      self = this;
-      self.profile = profile;
-      return rs.setItem('public', self.key, JSON.stringify(self.profile), function() {
-        return callback(self.profile);
+      var _this = this;
+      this.profile = profile;
+      return rs.setItem('public', this.key, JSON.stringify(this.profile), function() {
+        return callback(_this.profile);
       });
     };
 
@@ -298,13 +296,12 @@
     };
 
     ProfileDAO.prototype.getByFriendWithDeferedRefresh = function(friend, maxAge, callback) {
-      var self;
-      self = this;
+      var _this = this;
       return this.getByFriend(friend, function(profile, status) {
         callback(profile, status);
-        if (self.getTime() - status.cacheTime > maxAge) {
+        if (_this.getTime() - status.cacheTime > maxAge) {
           log("Update Profile defered");
-          return self.getByFriendRefreshed(friend, callback);
+          return _this.getByFriendRefreshed(friend, callback);
         }
       });
     };

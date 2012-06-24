@@ -21,16 +21,15 @@ wrapIdentity = (item) -> item
 class RemoteStorageDAO
   constructor: (@remoteStorageUtils,@category, @key,@wrapItem = wrapIdentity) ->
 
-  readAllItems: (callback) ->
-    self = this
-    if self.dataCache
-      defer ->
-        callback(self.dataCache.items)
+  readAllItems: (callback) =>
+    if @dataCache
+      defer =>
+        callback(@dataCache.items)
     else
-      self.remoteStorageUtils.getItem(@category, @key, (error, data)->
-          self.dataCache = JSON.parse(data || '{}')
-          self.dataCache.items = getItemsFromContainer(self.dataCache,self.wrapItem)
-          callback(self.dataCache.items)
+      @remoteStorageUtils.getItem(@category, @key, (error, data) =>
+          @dataCache = JSON.parse(data || '{}')
+          @dataCache.items = getItemsFromContainer(@dataCache,@wrapItem)
+          callback(@dataCache.items)
       )
 
   findItemByID: (items, id) -> _.find(items, (it) -> it.id == id)
@@ -52,21 +51,19 @@ class RemoteStorageDAO
     @dataCache.items = allItems
     @remoteStorageUtils.setItem(@category, @key, JSON.stringify(@dataCache), callback)
 
-  saveItem: (item, callback) ->
-    self = @
-    @readAllItems (items) ->
-      oldItem = self.findItemByID(items, item.id)
+  saveItem: (item, callback) =>
+    @readAllItems (items) =>
+      oldItem = @findItemByID(items, item.id)
       if oldItem
         items[_.indexOf(items, oldItem)] = item
       else
         items.push(item)
-      self.save(items, callback)
+      @save(items, callback)
 
-  deleteItem: (id, callback) ->
-    self = @
-    @readAllItems (items) ->
-      oldItem = self.findItemByID(items, id)
-      self.save(_.without(items, oldItem), callback)
+  deleteItem: (id, callback) =>
+    @readAllItems (items) =>
+      oldItem = @findItemByID(items, id)
+      @save(_.without(items, oldItem), callback)
 
 
 class MyStuffDAO extends RemoteStorageDAO
@@ -74,12 +71,11 @@ class MyStuffDAO extends RemoteStorageDAO
     super(@remoteStorageUtils,@category,@key, (stuffData) -> new Stuff(stuffData))
 
   save: (allItems, callback) ->
-    self = this
     super(allItems, callback)
-    @settingsDAO.getSecret (secret)->
-      self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify({items:allItems}), doNothing)
+    @settingsDAO.getSecret (secret) =>
+      @remoteStorageUtils.setItem('public', PUBLIC_PREFIX+secret, JSON.stringify({items:allItems}), doNothing)
     publicStuff = _.filter(allItems, (item)-> item.visibility=='public')
-    self.remoteStorageUtils.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify({items:publicStuff}), doNothing)
+    @remoteStorageUtils.setItem('public', PUBLIC_PREFIX+PUBLIC_KEY, JSON.stringify({items:publicStuff}), doNothing)
 
 
 class LocalStorageDAO
@@ -115,34 +111,31 @@ class SettingsDAO
     @settings = null
     @key = 'settings'
 
-  readSettings: (callback) ->
-    self = this
-    if self.settings
-      defer ->
-        callback(self.settings)
+  readSettings: (callback) =>
+    if @settings
+      defer =>
+        callback(@settings)
     else
-      rs.getItem(RS_CATEGORY, self.key, (error, data)->
+      rs.getItem(RS_CATEGORY, @key, (error, data) =>
           if error=='timeout'
             # TODO: bad luck
           else
             settings = JSON.parse(data || '{}')
-            self.settings = settings
+            @settings = settings
             if (!settings.secret)
               settings.secret = randomString(20)
-              self.saveSettings(callback)
+              @saveSettings(callback)
             else
               callback(settings)
       )
 
   getSecret: (callback) ->
-    self = this
     @readSettings (settings)->
       callback(settings.secret)
 
-  saveSettings: (callback) ->
-    self = this
-    rs.setItem(RS_CATEGORY, self.key, JSON.stringify(self.settings), ()->
-      callback(self.settings)
+  saveSettings: (callback) =>
+    rs.setItem(RS_CATEGORY, @key, JSON.stringify(@settings), () =>
+      callback(@settings)
     )
 
 class ProfileDAO
@@ -160,11 +153,10 @@ class ProfileDAO
         callback(new Profile(@profile))
       )
 
-  save: (profile,callback) ->
-    self = this
-    self.profile = profile
-    rs.setItem('public', self.key, JSON.stringify(self.profile), ()->
-      callback(self.profile)
+  save: (profile,callback) =>
+    @profile = profile
+    rs.setItem('public', @key, JSON.stringify(@profile), () =>
+      callback(@profile)
     )
 
   getByFriend: (friend,callback) ->
@@ -173,13 +165,12 @@ class ProfileDAO
   getByFriendRefreshed: (friend,callback) ->
     @_getByFriend('getRefreshed',friend,callback)
 
-  getByFriendWithDeferedRefresh: (friend,maxAge,callback) ->
-    self = this
-    @getByFriend(friend, (profile,status)->
+  getByFriendWithDeferedRefresh: (friend,maxAge,callback) =>
+    @getByFriend(friend, (profile,status) =>
       callback(profile,status)
-      if self.getTime()-status.cacheTime > maxAge
+      if @getTime()-status.cacheTime > maxAge
         log("Update Profile defered")
-        self.getByFriendRefreshed(friend,callback)
+        @getByFriendRefreshed(friend,callback)
     )
 
   _getByFriend: (getMethod,friend,callback) ->
