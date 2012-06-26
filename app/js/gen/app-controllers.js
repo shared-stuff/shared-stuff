@@ -25,13 +25,11 @@
       isLoggedIn: false
     };
     $scope.logout = function() {
-      remoteStorageUtils.deleteToken();
-      localStorage.removeItem('userAddress');
       $scope.session = {
         userAddress: null,
         isLoggedIn: false
       };
-      return window.location.href = "logout.html";
+      return AppController.logout();
     };
     $scope.setLoggenOn = function() {
       $scope.session = {
@@ -79,6 +77,12 @@
   };
 
   AppController.needsUserLoggedIn = needsUserLoggedIn;
+
+  AppController.logout = function() {
+    remoteStorageUtils.deleteToken();
+    localStorage.removeItem('userAddress');
+    return window.location.href = "logout.html";
+  };
 
   AppController.$inject = ['$scope', '$location'];
 

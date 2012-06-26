@@ -15,7 +15,8 @@ var remoteStorageUtils = (function () {
                 noRedo();
             }
         } else if (error==401) {
-            window.alert("Looks like your session has expired! Please log out and log back in.");
+            window.alert("Looks like your session has expired! We have to log out you. Please log back in.");
+            AppController.logout();
         }
     }
 
@@ -146,7 +147,7 @@ var remoteStorageUtils = (function () {
                 //alert('Could not store "' + key + '" in "' + category + '" category');
                 console.log('Could not store "' + key + '" in "' + category + '" category');
                 console.log(error);
-                showErrorIfNeeded(error,getItem,orgArguments,function(){
+                showErrorIfNeeded(error,setItem,orgArguments,function(){
                     callback && callback(error);
                 });
             } else {

@@ -18,14 +18,11 @@ AppController = ($scope,$location)->
   }
 
   $scope.logout = ->
-    remoteStorageUtils.deleteToken();
-    localStorage.removeItem('userAddress')
     $scope.session = {
       userAddress: null
       isLoggedIn: false
     }
-    window.location.href="logout.html";
-    #$location.path('/login')
+    AppController.logout()
 
   $scope.setLoggenOn = ->
     $scope.session = {
@@ -63,6 +60,11 @@ AppController = ($scope,$location)->
     $scope.isAppLoaded = true
 
 AppController.needsUserLoggedIn = needsUserLoggedIn;
+AppController.logout = ->
+  remoteStorageUtils.deleteToken();
+  localStorage.removeItem('userAddress')
+  window.location.href="logout.html";
+
 
 AppController.$inject = ['$scope','$location']
 
