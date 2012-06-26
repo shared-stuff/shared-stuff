@@ -26,7 +26,7 @@
     <input type="search" placeholder="Search" ng-model="searchQuery" ng-model-instant/>
 </div>
 
-<img src="img/loading.gif" alt="Loading..." ng-show="status=='LOADING'">
+<img src="img/loading.gif" alt="Loading..." ng-show="showLoadingIndicator">
 
 <div class="alert alert-info" ng-show="status == 'NO_FRIENDS'">
     It seems that you have no friends. You can change this by <a href="#/friends">adding some friends</a>.

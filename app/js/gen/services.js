@@ -352,7 +352,7 @@
       if (cachedData) {
         log("Loading " + userAddress + ":" + key + " from cache");
         cachedWrapper = JSON.parse(cachedData);
-        return callback(cachedWrapper.data, {
+        return callback(cachedWrapper.data || defaultValue, {
           cacheTime: cachedWrapper.time
         });
       } else {
@@ -397,19 +397,14 @@
     PublicRemoteStorageService.prototype.getByClient = function(userAddress, client, key, defaultValue, callback) {
       var _this = this;
       return client.get(key, function(err, dataJsonString) {
-        var currentTime, data;
+        var currentTime, data, status;
         currentTime = _this.getTime();
-        if (dataJsonString) {
-          data = JSON.parse(dataJsonString);
-          _this.cacheInLocalStorage(userAddress, key, new CacheItemWrapper(currentTime, data));
-          return callback(data, {
-            cacheTime: currentTime
-          });
-        } else {
-          return callback(defaultValue, {
-            cacheTime: currentTime
-          });
-        }
+        status = {
+          cacheTime: currentTime
+        };
+        data = dataJsonString ? JSON.parse(dataJsonString) : null;
+        _this.cacheInLocalStorage(userAddress, key, new CacheItemWrapper(currentTime, data));
+        return callback(data || defaultValue, status);
       });
     };
 

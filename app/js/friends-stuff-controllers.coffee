@@ -1,5 +1,6 @@
 log = utils.log
 focus = utils.focus
+getCurrentTime = utils.getCurrentTime
 
 filterByDirection = (stuffList, sharingDirection) ->
   if sharingDirection == 'giveAndWish'
@@ -8,7 +9,8 @@ filterByDirection = (stuffList, sharingDirection) ->
     return (stuff for stuff in stuffList when stuff.sharingDirection == sharingDirection)
 
 
-CACHE_AGE_THRESHOLD = 10*1000
+CACHE_AGE_THRESHOLD = 60*1000
+LOADING_INDICATOR_DELAY = 500
 
 FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
   $scope.stuffList = []
@@ -18,6 +20,8 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
   $scope.sharingDirection = sessionStorage.getItem('friends-stuff-sharingDirection') || 'giveAndWish'
   $scope.sharingDirectionNames = {'giveAndWish': 'Give & Wish', 'give': 'Give', 'wish': 'Wish'}
   $scope.status = "LOADING"
+  $scope.showLoadingIndicator = false
+  loadingIndicatorDelayReached = false
   updateTimeout = undefined
   updateCountdown = 0
 
@@ -29,6 +33,9 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
     updateCountdown -= 1
     friendsStuffDAO.refreshMostOutdatedFriend(CACHE_AGE_THRESHOLD,onUpdateStuffList)
 
+  updateLoadingIndicator = ->
+    $scope.showLoadingIndicator = $scope.status == 'LOADING' && loadingIndicatorDelayReached
+
   onUpdateStuffList = (friends,stuffList, status) ->
     $scope.stuffList = stuffList
     if $scope.status != "LOADED"
@@ -37,9 +44,10 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
       if status == "LOADED"
         updateCountdown = friends.length
     filterStuffList()
+    updateLoadingIndicator()
     $scope.$digest()
     if (status == 'LOADED' && updateCountdown>0)
-      updateTimeout = setTimeout(update,1000)
+      updateTimeout = setTimeout(update,250)
 
   $scope.sortBy = (sortAttribute) ->
     sessionStorage.setItem('friends-stuff-sortAttribute', sortAttribute)
@@ -62,6 +70,10 @@ FriendsStuffController = ($scope, $timeout, friendDAO, friendsStuffDAO)->
 
   friendsStuffDAO.clearCache()
   friendsStuffDAO.list(onUpdateStuffList)
+  $timeout( ->
+    loadingIndicatorDelayReached = true
+    updateLoadingIndicator()
+  ,LOADING_INDICATOR_DELAY)
 
 
 FriendsStuffController.$inject = ['$scope', '$timeout', 'friendDAO', 'friendsStuffDAO']

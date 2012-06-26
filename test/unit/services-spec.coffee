@@ -32,6 +32,39 @@ describe('PublicRemoteStorageService', ->
       expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('{"time":123,"data":"value"}')
   )
 
+  it('should cache missing values as null localStorage', ->
+    result = undefined
+    cacheTime = undefined
+    service.get('user@host.com', 'key', 'defaultValue', (resultArg, status)->
+      result = resultArg
+      cacheTime = status.cacheTime
+    )
+
+    waitsFor(( -> result ), "Retrieved Result", 1000)
+
+    runs ->
+      expect(result).toEqual('defaultValue')
+      expect(cacheTime).toEqual(getTime())
+      expect(localStorageMock.getItem('remoteStorageCache:user@host.com:public:key')).toEqual('{"time":123,"data":null}')
+  )
+
+  it('should return default value for missing values cached as null', ->
+    localStorageMock.setItem('remoteStorageCache:user@host.com:public:key', '{"time":111,"data":null}')
+
+    result = undefined
+    cacheTime = undefined
+    service.get('user@host.com', 'key', 'defaultValue', (resultArg, status)->
+      result = resultArg
+      cacheTime = status.cacheTime
+    )
+
+    waitsFor(( -> result ), "Retrieved Result", 100)
+
+    runs ->
+      expect(result).toEqual('defaultValue')
+      expect(cacheTime).toEqual(111)
+  )
+
   it('should return cached values from localStorage', ->
     localStorageMock.setItem('remoteStorageCache:user@host.com:public:key', '{"time":111,"data":"value"}')
 

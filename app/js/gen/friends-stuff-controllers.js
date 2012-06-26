@@ -1,9 +1,11 @@
 (function() {
-  var CACHE_AGE_THRESHOLD, FriendsStuffController, filterByDirection, focus, log;
+  var CACHE_AGE_THRESHOLD, FriendsStuffController, LOADING_INDICATOR_DELAY, filterByDirection, focus, getCurrentTime, log;
 
   log = utils.log;
 
   focus = utils.focus;
+
+  getCurrentTime = utils.getCurrentTime;
 
   filterByDirection = function(stuffList, sharingDirection) {
     var stuff;
@@ -22,10 +24,12 @@
     }
   };
 
-  CACHE_AGE_THRESHOLD = 10 * 1000;
+  CACHE_AGE_THRESHOLD = 60 * 1000;
+
+  LOADING_INDICATOR_DELAY = 500;
 
   FriendsStuffController = function($scope, $timeout, friendDAO, friendsStuffDAO) {
-    var filterStuffList, onUpdateStuffList, update, updateCountdown, updateTimeout;
+    var filterStuffList, loadingIndicatorDelayReached, onUpdateStuffList, update, updateCountdown, updateLoadingIndicator, updateTimeout;
     $scope.stuffList = [];
     $scope.filteredStuffList = [];
     $scope.sortAttribute = sessionStorage.getItem('friends-stuff-sortAttribute') || '-modified';
@@ -41,6 +45,8 @@
       'wish': 'Wish'
     };
     $scope.status = "LOADING";
+    $scope.showLoadingIndicator = false;
+    loadingIndicatorDelayReached = false;
     updateTimeout = void 0;
     updateCountdown = 0;
     filterStuffList = function() {
@@ -52,6 +58,9 @@
       updateCountdown -= 1;
       return friendsStuffDAO.refreshMostOutdatedFriend(CACHE_AGE_THRESHOLD, onUpdateStuffList);
     };
+    updateLoadingIndicator = function() {
+      return $scope.showLoadingIndicator = $scope.status === 'LOADING' && loadingIndicatorDelayReached;
+    };
     onUpdateStuffList = function(friends, stuffList, status) {
       $scope.stuffList = stuffList;
       if ($scope.status !== "LOADED") {
@@ -59,9 +68,10 @@
         if (status === "LOADED") updateCountdown = friends.length;
       }
       filterStuffList();
+      updateLoadingIndicator();
       $scope.$digest();
       if (status === 'LOADED' && updateCountdown > 0) {
-        return updateTimeout = setTimeout(update, 1000);
+        return updateTimeout = setTimeout(update, 250);
       }
     };
     $scope.sortBy = function(sortAttribute) {
@@ -83,7 +93,11 @@
       }
     });
     friendsStuffDAO.clearCache();
-    return friendsStuffDAO.list(onUpdateStuffList);
+    friendsStuffDAO.list(onUpdateStuffList);
+    return $timeout(function() {
+      loadingIndicatorDelayReached = true;
+      return updateLoadingIndicator();
+    }, LOADING_INDICATOR_DELAY);
   };
 
   FriendsStuffController.$inject = ['$scope', '$timeout', 'friendDAO', 'friendsStuffDAO'];

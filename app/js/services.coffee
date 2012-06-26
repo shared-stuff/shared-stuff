@@ -197,7 +197,7 @@ class PublicRemoteStorageService
     if cachedData
       log("Loading #{userAddress}:#{key} from cache")
       cachedWrapper = JSON.parse(cachedData)
-      callback(cachedWrapper.data,{cacheTime: cachedWrapper.time})
+      callback(cachedWrapper.data || defaultValue,{cacheTime: cachedWrapper.time})
     else
       @_refresh(userAddress,key,defaultValue,callback)
 
@@ -228,12 +228,10 @@ class PublicRemoteStorageService
   getByClient: (userAddress,client,key,defaultValue,callback) =>
     client.get(key, (err, dataJsonString) =>
       currentTime = @getTime()
-      if dataJsonString
-        data = JSON.parse(dataJsonString);
-        @cacheInLocalStorage(userAddress,key,new CacheItemWrapper(currentTime,data))
-        callback(data,{cacheTime:currentTime})
-      else
-        callback(defaultValue,{cacheTime:currentTime})
+      status = {cacheTime:currentTime}
+      data = if dataJsonString then JSON.parse(dataJsonString) else null
+      @cacheInLocalStorage(userAddress,key,new CacheItemWrapper(currentTime,data))
+      callback(data || defaultValue,status)
     )
 
   #private
