@@ -32,7 +32,7 @@ class TestFirstLogin(unittest.TestCase):
         
         browser = webdriver.Firefox() # Get local session of firefox
         cls.browser = browser
-        browser.implicitly_wait(5)
+        browser.implicitly_wait(3)
         browser.get("http://localhost:8000/app/index.html#/login") # Load page
         elem = browser.find_element_by_id("remoteStorageID") # Find the login box
         elem.send_keys("shybyte@localhost.net" + Keys.RETURN)
@@ -57,6 +57,7 @@ class TestFirstLogin(unittest.TestCase):
         self.browser = TestFirstLogin.browser
         browser = self.browser
         try:
+            self.assertPageTitle("Friends' Stuff")
             browser.find_element_by_link_text('My Account')
         except Exception:
             self.fail("Login failed.")
@@ -66,7 +67,47 @@ class TestFirstLogin(unittest.TestCase):
 
     def test_login(self):
         browser = self.browser
-        browser.find_element_by_link_text('About')
+        
+        self.clickLink("Friends' Stuff");
+        self.assertLink('add shybyte')
+
+        self.clickLink('My Stuff');
+        self.assertPageTitle('My Stuff');
+        self.assertH3('Add Stuff')
+        
+        self.clickLink('Share Stuff');
+        self.assertPageTitle('Share your Stuff');        
+        self.assertLink('add some stuff');        
+
+        self.clickLink('Friends');
+        self.assertPageTitle('My Friends');        
+        self.assertH3('Add Friend')
+
+        self.clickLink('My Account');
+        self.assertPageTitle('Account / Profile');
+        self.assertInput('email','')
+
+        self.clickLink('About');
+        self.assertPageTitle('What is Shared Stuff?');        
+    
+    def assertLink(self,linkText):
+            self.getLink(linkText)
+        
+    def clickLink(self,linkText):
+            self.getLink(linkText).click()
+            
+    def getLink(self,linkText):
+            return self.browser.find_element_by_link_text(linkText);            
+            
+    def assertPageTitle(self,pageTitle):
+            self.browser.find_element_by_xpath('//h2[contains(.,"%s")]' % pageTitle)
+
+    def assertInput(self,inputElementId,expectedValue):
+        el = self.browser.find_element_by_xpath("//input['@id=%s']" % inputElementId)
+        self.assertEquals(expectedValue,el.get_attribute('value'))
+
+    def assertH3(self,text):
+            self.browser.find_element_by_xpath('//h3[contains(.,"%s")]' % text)
         
 
 
