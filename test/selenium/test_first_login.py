@@ -1,11 +1,12 @@
 import unittest
 from selenium import webdriver
+from selenium.webdriver.support.wait import  WebDriverWait
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.keys import Keys
 import time
 import os
 import remote_storage_server
-from remote_storage_server import Unhosted,HttpdLite,RequestHandler
+from remote_storage_server import Unhosted, HttpdLite, RequestHandler
 from threading import Thread
 from multiprocessing import Process
 from tempfile import mkdtemp
@@ -13,7 +14,7 @@ from tempfile import mkdtemp
 # lsof -i tcp:6789
 class ServerThread(Process):
     def run(self):
-        db_path =  mkdtemp('remote-storage') #os.path.expanduser('~/.Unhosted.py')
+        db_path = mkdtemp('remote-storage') #os.path.expanduser('~/.Unhosted.py')
         print db_path
         self.unhosted = Unhosted(db_path)
         unhosted = self.unhosted
@@ -27,11 +28,17 @@ class TestFirstLogin(unittest.TestCase):
     
     @classmethod
     def setUpClass(cls):
-        cls.rsServer = ServerThread()
-        cls.rsServer.start()
+        pass
+    @classmethod
+    def tearDownClass(cls):
+        pass
+    
+    def setUp(self):
+        self.rsServer = ServerThread()
+        self.rsServer.start()
         
         browser = webdriver.Firefox() # Get local session of firefox
-        cls.browser = browser
+        self.browser = browser
         browser.implicitly_wait(3)
         browser.get("http://localhost:8000/app/index.html#/login") # Load page
         elem = browser.find_element_by_id("remoteStorageID") # Find the login box
@@ -46,29 +53,25 @@ class TestFirstLogin(unittest.TestCase):
         allowButton = browser.find_element_by_xpath("//input[@value='Allow']")
         allowButton.click()
         browser.switch_to_window(browser.window_handles[0])
-
+        browser.find_element_by_xpath('//h2[contains(.,"%s")]' % "Friends' Stuff")
         
-    @classmethod
-    def tearDownClass(cls):
-        cls.browser.close()
-        cls.rsServer.terminate()
-    
-    def setUp(self):
-        self.browser = TestFirstLogin.browser
         browser = self.browser
         try:
-            self.assertPageTitle("Friends' Stuff")
             browser.find_element_by_link_text('My Account')
         except Exception:
             self.fail("Login failed.")
 
     def tearDown(self):
+        self.browser.close()
+        self.rsServer.terminate()
+        time.sleep(0.5)
         pass
 
     def test_login(self):
         browser = self.browser
         
         self.clickLink("Friends' Stuff");
+        self.assertPageTitle("Friends' Stuff")
         self.assertLink('add shybyte')
 
         self.clickLink('My Stuff');
@@ -85,31 +88,120 @@ class TestFirstLogin(unittest.TestCase):
 
         self.clickLink('My Account');
         self.assertPageTitle('Account / Profile');
-        self.assertInput('email','')
+        self.assertValue('email', '')
 
         self.clickLink('About');
-        self.assertPageTitle('What is Shared Stuff?');        
-    
-    def assertLink(self,linkText):
+        self.assertPageTitle('What is Shared Stuff?');
+
+    def test_add_shybyte_as_friend(self):
+        self.clickLink("Friends' Stuff")
+        self.clickLink('add shybyte')
+        
+        self.assertH2('Invitation from Marco')
+        self.clickButton('Add to my friends')
+        
+        self.assertValue('name', 'Marco')
+        self.assertValue('userAddress', 'shybyte@5apps.com')
+        self.clickButton('Add Friend')
+
+        self.clickLink("Marco")
+        
+        self.assertH2('Marco')
+        self.clickLink("Friends' Stuff")
+        
+        self.assertH3('Clean Code')
+        
+        
+    def test_add_and_share_stuff(self):
+        self.clickLink("My Stuff")
+        
+        # add private stuff
+        privateExampleTitle = 'Private Example Stuff'
+        self.assertH2('My Stuff')
+        self.enter('title', privateExampleTitle)
+        self.enter('description', 'Private Example Stuff Description')
+        self.clickButton('Add Stuff')
+        
+        self.assertH3(privateExampleTitle)
+        self.clickLink(privateExampleTitle)
+        
+        self.assertValue('title', privateExampleTitle)
+        self.assertValue('description', 'Private Example Stuff Description')
+        
+        # add public stuff
+        self.clickLink("My Stuff")
+        self.assertH2('My Stuff')
+        self.clickButton('Add Stuff')
+        publicExampleTitle = 'Public Example Stuff'
+        self.enter('title', publicExampleTitle)
+        self.enter('description', 'Public Example Stuff Description')
+        self.select('Public')
+        self.clickButton('Add Stuff')
+        
+        self.assertH3(publicExampleTitle)
+        self.assertTextInClass('stuffFooter','Public')
+        
+        
+        
+        
+        
+        
+
+
+    def assertLink(self, linkText):
             self.getLink(linkText)
         
-    def clickLink(self,linkText):
+    def clickLink(self, linkText):
             self.getLink(linkText).click()
-            
-    def getLink(self,linkText):
+
+    def clickButton(self, text):
+            button =  self.getButton(text)
+            button.click()
+    
+    def getLink(self, linkText):
             return self.browser.find_element_by_link_text(linkText);            
+
+    def getVisibleElement(self,xpath):
+        def findVisible(driver):
+            els = driver.find_elements_by_xpath(xpath)
+            for el in els:
+                if el.is_displayed():
+                    return el
+            return False
+        return WebDriverWait(self.browser, 10).until(findVisible,'Can\'t find visible element %s' % xpath)
+
+    def getButton(self, text):
+            return self.getVisibleElement("//button[contains(.,'%s')]" % text);            
             
-    def assertPageTitle(self,pageTitle):
+    def assertPageTitle(self, pageTitle):
             self.browser.find_element_by_xpath('//h2[contains(.,"%s")]' % pageTitle)
 
-    def assertInput(self,inputElementId,expectedValue):
-        el = self.browser.find_element_by_xpath("//input['@id=%s']" % inputElementId)
-        self.assertEquals(expectedValue,el.get_attribute('value'))
+    def assertValue(self, inputElementId, expectedValue):
+        def waitForInputValue(browser):
+            el = browser.find_element_by_xpath("//*[@id='%s']" % inputElementId)
+            #print "Found value %s for input element %s" % (el.get_attribute('value'),inputElementId)
+            return expectedValue == el.get_attribute('value')
+        WebDriverWait(self.browser, 10).until(waitForInputValue,'Can\'t find input element %s with value %s' % (inputElementId,expectedValue))
 
-    def assertH3(self,text):
+    def assertH3(self, text):
             self.browser.find_element_by_xpath('//h3[contains(.,"%s")]' % text)
-        
 
+    def assertH2(self, text):
+            self.browser.find_element_by_xpath('//h2[contains(.,"%s")]' % text)
+        
+    def enter(self,inputElementId,text):
+         el = self.browser.find_element_by_xpath("//*[@id='%s']" % inputElementId)
+         el.send_keys(text)
+         
+    def select(self,optionText):
+         el = self.browser.find_element_by_xpath("//option[contains(.,'%s')]" % optionText)
+         el.click()  
+    
+    def assertText(self,text):
+        self.browser.find_element_by_xpath("//body[contains(.,'%s')]" % text)
+
+    def assertTextInClass(self,cssClass,text):
+        self.browser.find_element_by_xpath("//*[contains(@class,'%s') and contains(.,'%s')]" % (cssClass,text))
 
 
 if __name__ == '__main__':
