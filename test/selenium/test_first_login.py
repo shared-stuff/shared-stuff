@@ -10,12 +10,18 @@ from remote_storage_server import Unhosted, HttpdLite, RequestHandler
 from threading import Thread
 from multiprocessing import Process
 from tempfile import mkdtemp
+from shutil import copytree
 
 # lsof -i tcp:6789
 class ServerThread(Process):
     def run(self):
         db_path = mkdtemp('remote-storage') #os.path.expanduser('~/.Unhosted.py')
         print db_path
+        remoteStorageFixtureDataDir = os.path.dirname(os.path.realpath(__file__))+"/fixture-data/existing-user"
+        print remoteStorageFixtureDataDir
+        copytree(remoteStorageFixtureDataDir, db_path+'/existing-user')
+        print remoteStorageFixtureDataDir
+        
         self.unhosted = Unhosted(db_path)
         unhosted = self.unhosted
         print 'This is Unhosted.py, listening on %s:%s' % unhosted.listen_on
@@ -40,9 +46,13 @@ class TestFirstLogin(unittest.TestCase):
         browser = webdriver.Firefox() # Get local session of firefox
         self.browser = browser
         browser.implicitly_wait(3)
+      
+            
+    def loginAs(self,username):
+        browser = self.browser
         browser.get("http://localhost:8000/app/index.html#/login") # Load page
         elem = browser.find_element_by_id("remoteStorageID") # Find the login box
-        elem.send_keys("shybyte@localhost.net" + Keys.RETURN)
+        elem.send_keys(username + Keys.RETURN)
         tryCounter = 0
         while tryCounter < 5 and len(browser.window_handles) < 2:
             print(len(browser.window_handles))
@@ -60,6 +70,7 @@ class TestFirstLogin(unittest.TestCase):
             browser.find_element_by_link_text('My Account')
         except Exception:
             self.fail("Login failed.")
+        
 
     def tearDown(self):
         self.browser.close()
@@ -67,7 +78,8 @@ class TestFirstLogin(unittest.TestCase):
         time.sleep(0.5)
         pass
 
-    def test_login(self):
+    def test_login_as_new_user(self):
+        self.loginAs('new-user@localhost.net')
         browser = self.browser
         
         self.clickLink("Friends' Stuff");
@@ -92,8 +104,27 @@ class TestFirstLogin(unittest.TestCase):
 
         self.clickLink('About');
         self.assertPageTitle('What is Shared Stuff?');
+        
+    def test_login_as_existing_user(self):
+        self.loginAs('existing-user@localhost.net')
+        browser = self.browser
+        
+        self.clickLink("Friends' Stuff");
+        self.assertPageTitle("Friends' Stuff")
+        #self.assertLink('add shybyte')
+        self.assertH3('Clean Code')
+        
+        self.clickLink('Friends')
+        self.assertLink("Marco")
+        
+        self.clickLink('My Account');
+        self.assertValue('email', 'existing-user@gmail.com')
+        
+        
+        
 
     def test_add_shybyte_as_friend(self):
+        self.loginAs('new-user@localhost.net')
         self.clickLink("Friends' Stuff")
         self.clickLink('add shybyte')
         
@@ -113,6 +144,7 @@ class TestFirstLogin(unittest.TestCase):
         
         
     def test_add_and_share_stuff(self):
+        self.loginAs('new-user@localhost.net')
         self.clickLink("My Stuff")
         
         # add private stuff
@@ -140,10 +172,6 @@ class TestFirstLogin(unittest.TestCase):
         
         self.assertH3(publicExampleTitle)
         self.assertTextInClass('stuffFooter','Public')
-        
-        
-        
-        
         
         
 
