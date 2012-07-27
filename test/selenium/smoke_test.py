@@ -28,8 +28,9 @@ class ServerThread(Process):
         self.server = HttpdLite.Server(unhosted.listen_on, unhosted,
                        handler=RequestHandler).serve_forever()
 
+BASE_URL = 'http://localhost:8000/app/index.html#'
 
-class TestFirstLogin(unittest.TestCase):
+class TestSmokeTest(unittest.TestCase):
     browser = None
     
     @classmethod
@@ -47,31 +48,6 @@ class TestFirstLogin(unittest.TestCase):
         self.browser = browser
         browser.implicitly_wait(3)
       
-            
-    def loginAs(self,username):
-        browser = self.browser
-        browser.get("http://localhost:8000/app/index.html#/login") # Load page
-        elem = browser.find_element_by_id("remoteStorageID") # Find the login box
-        elem.send_keys(username + Keys.RETURN)
-        tryCounter = 0
-        while tryCounter < 5 and len(browser.window_handles) < 2:
-            print(len(browser.window_handles))
-            time.sleep(0.5)
-            tryCounter += 1
-        browser.switch_to_window(browser.window_handles[1])
-        #assert "Grant" in browser.title
-        allowButton = browser.find_element_by_xpath("//input[@value='Allow']")
-        allowButton.click()
-        browser.switch_to_window(browser.window_handles[0])
-        browser.find_element_by_xpath('//h2[contains(.,"%s")]' % "Friends' Stuff")
-        
-        browser = self.browser
-        try:
-            browser.find_element_by_link_text('My Account')
-        except Exception:
-            self.fail("Login failed.")
-        
-
     def tearDown(self):
         self.browser.close()
         self.rsServer.terminate()
@@ -120,7 +96,16 @@ class TestFirstLogin(unittest.TestCase):
         self.clickLink('My Account');
         self.assertValue('email', 'existing-user@gmail.com')
         
+    def test_login_from_invitation(self):
+        browser = self.browser
+        self.goto("existing-user@localhost.net") 
+        self.clickButton('Login and Add Friend')
+        self.assertPageTitle("Login")
+        self.loginAs('new-user@localhost.net')
         
+        self.assertPageTitle("My Friends")
+        self.assertValue('name', 'Existing User')
+        self.assertValue('userAddress', 'existing-user@localhost.net')
         
 
     def test_add_shybyte_as_friend(self):
@@ -231,6 +216,31 @@ class TestFirstLogin(unittest.TestCase):
     def assertTextInClass(self,cssClass,text):
         self.browser.find_element_by_xpath("//*[contains(@class,'%s') and contains(.,'%s')]" % (cssClass,text))
 
+
+    def loginAs(self,username):
+        browser = self.browser
+        self.goto("/login") # Load page
+        elem = browser.find_element_by_id("remoteStorageID") # Find the login box
+        elem.send_keys(username + Keys.RETURN)
+        tryCounter = 0
+        while tryCounter < 5 and len(browser.window_handles) < 2:
+            print(len(browser.window_handles))
+            time.sleep(0.5)
+            tryCounter += 1
+        browser.switch_to_window(browser.window_handles[1])
+        #assert "Grant" in browser.title
+        allowButton = browser.find_element_by_xpath("//input[@value='Allow']")
+        allowButton.click()
+        browser.switch_to_window(browser.window_handles[0])
+        
+        browser = self.browser
+        try:
+            browser.find_element_by_link_text('My Account')
+        except Exception:
+            self.fail("Login failed.")
+            
+    def goto(self,path):
+        self.browser.get("%s%s" % (BASE_URL,path))
 
 if __name__ == '__main__':
     unittest.main()
