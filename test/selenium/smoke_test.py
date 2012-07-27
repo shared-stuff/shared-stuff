@@ -89,12 +89,23 @@ class TestSmokeTest(unittest.TestCase):
         self.assertPageTitle("Friends' Stuff")
         #self.assertLink('add shybyte')
         self.assertH3('Clean Code')
+
+        self.clickLink("My Stuff");
+        self.assertH3('Public Example Stuff')
+        self.assertH3('Private Example Stuff')
         
+        self.clickLink('Share Stuff')
+        self.assertValue('inviteUrl', 'http://localhost:8000/app/index.html#existing-user@localhost.net/ZXR6GjcSmPJTtr3EwbVIg')
+        self.assertValue('publicInviteUrl', 'http://localhost:8000/app/index.html#existing-user@localhost.net')
+
         self.clickLink('Friends')
         self.assertLink("Marco")
         
         self.clickLink('My Account');
+        self.assertValue('name', 'Existing User')
         self.assertValue('email', 'existing-user@gmail.com')
+        self.assertValue('location', 'Berlin')
+        self.assertValue('image', 'https://lh5.googleusercontent.com/-fLRGKlGhTMw/T-3cqFxXmgI/AAAAAAAABZA/zdjyH0gfqWo/s800/profile.jpg')
         
     def test_login_from_invitation(self):
         browser = self.browser
