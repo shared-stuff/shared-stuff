@@ -14,7 +14,7 @@ var remoteStorageUtils = (function () {
             } else if(noRedo) {
                 noRedo();
             }
-        } else if (error==401) {
+        } else if (error==401 || error==403) {
             window.alert("Looks like your session has expired! We have to log out you. Please log back in.");
             AppController.logout();
         }
